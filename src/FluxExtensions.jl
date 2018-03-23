@@ -1,5 +1,8 @@
 module FluxExtensions
+using Flux
 
-# package code goes here
+include("layers/resdense.jl")
 
+
+export ResDense
 end # module

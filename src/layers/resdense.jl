@@ -12,6 +12,13 @@ function (m::ResDense{A,B,D})(x) where {A,B,D<:Flux.TrackedArray}
 	xx + m.b*(m.a(xx))
 end
 
+function Base.show(io::IO, l::ResDense)
+  print(io, "ResDense(");
+  print(io,l.a)
+  print(io, ")")
+end
+
+
 
 Flux.treelike(ResDense)
 adapt(T, m::ResDense) = ResDense(adapt(T,m.a),adapt(T,m.b),adapt(T,m.d))

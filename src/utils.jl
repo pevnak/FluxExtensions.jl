@@ -1,4 +1,3 @@
-using Adapt
 import Adapt: adapt
 	
 adapt(T, x::Array) = T.(x)

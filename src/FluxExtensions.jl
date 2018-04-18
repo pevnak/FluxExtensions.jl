@@ -1,6 +1,7 @@
 module FluxExtensions
 using Adapt
 using Flux
+import Adapt: adapt
 
 include("layers/resdense.jl")
 include("layers/layerbuilder.jl")

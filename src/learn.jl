@@ -1,3 +1,4 @@
+using ValueHistories
 function learn(loss,opt,data,cb = ()->();cbreak = 100)
 	fVal = 0.0
 	t = zeros(2)
@@ -17,4 +18,5 @@ function learn(loss,opt,data,cb = ()->();cbreak = 100)
 		tic()
 	end
 	toq();
+	nothing
 end

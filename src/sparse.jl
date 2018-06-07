@@ -38,7 +38,6 @@ back(::typeof(*), Δ, a::AbstractMatrix, b::SparseMatrixCSC) = Flux.Tracker.@bac
 back(::typeof(mul), Δ, a::AbstractMatrix, b::SparseMatrixCSC) = Flux.Tracker.@back(a, multrans(Δ,b))
 a::Flux.Tracker.TrackedMatrix * b::SparseMatrixCSC = Flux.Tracker.track(mul, a, b)
 
-
 # using CuArrays
 # using CUSPARSE
 # CuArrays.allowscalar(false)

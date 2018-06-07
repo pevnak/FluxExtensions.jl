@@ -1,3 +1,4 @@
+using Plots
 function plotheatmap(x,f)
 	xl = linspace(minimum(x[1,:]),maximum(x[1,:]),100)
 	yl = linspace(minimum(x[2,:]),maximum(x[2,:]),100)

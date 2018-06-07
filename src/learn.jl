@@ -1,5 +1,5 @@
 using ValueHistories
-function learn(loss,opt,data,cb = ()->();cbreak = 100)
+function learn(loss,opt,data,cb = ()->(),cbreak = 100)
 	fVal = 0.0
 	t = zeros(2)
 	tic()
@@ -14,6 +14,7 @@ function learn(loss,opt,data,cb = ()->();cbreak = 100)
 		if mod(i,cbreak) == 0
 			println(@sprintf("%d: error = %g load time = %.2fs compute time = %.2fs",i,fVal/cbreak,t[1],t[2]))
 			fVal = 0.0
+			cb()
 		end
 		tic()
 	end

@@ -7,7 +7,7 @@ include("layers/resdense.jl")
 include("layers/layerbuilder.jl")
 include("utils.jl")
 include("learn.jl")
-include("plot.jl")
+# include("plot.jl")
 include("sparse.jl")
 include("sumnondiagonal.jl")
 include("scatter.jl")
@@ -41,5 +41,5 @@ end
 restoremodel!(m,p) = foreach(a -> copy!(Flux.data(a[1]),a[2]),zip(Flux.params(m),p))
 
 
-export ResDense, gather, scatter, restoremodel, sumnondiagonal, layerbuilder
+export ResDense, restoremodel, layerbuilder
 end # module

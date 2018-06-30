@@ -18,6 +18,7 @@ end
 @testset "scatter" begin 
 	x = randn(4,4) 
 	@test gradcheck((x) -> sum(FluxExtensions.scatter(x,4)),x)
+	@test gradcheck((x) -> sum(FluxExtensions.scatter(x,[1,2,3,4])),x)
 end
 
 

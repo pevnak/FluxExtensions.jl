@@ -93,5 +93,10 @@ function logsumexp(x,k::Int)
   xm .+ log.( sum( exp.(x .- xm),k))
 end
 
+function logsumexp(x)
+  xm = maximum(x)
+  xm .+ log.( sum( exp.(x .- xm)))
+end
+
 scatter(x::Flux.Tracker.TrackedMatrix, k) = Flux.Tracker.track(scatter,x, k )
 back(::typeof(scatter), Δ, x::AbstractMatrix, k) = Flux.Tracker.@back(x, gather(Δ, k))

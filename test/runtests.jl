@@ -1,6 +1,6 @@
 using FluxExtensions
-using Base.Test
-using Flux.Tracker, Base.Test, NNlib
+using Test
+using Flux, Flux.Tracker, NNlib
 using Flux.Tracker: TrackedReal, gradcheck
 
 

@@ -1,5 +1,5 @@
 using FluxExtensions
-using Base.Test
+using Test
 using Flux.Tracker, Base.Test, NNlib
 using Flux.Tracker: TrackedReal, gradcheck
 

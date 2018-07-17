@@ -35,7 +35,7 @@ function scatter(x::Matrix,k::Int)
 end
 
 function scatter(x::Matrix,k::Vector{Int})
-  assert(size(x,2) >= length(k)) 
+  @assert size(x,2) >= length(k)
   xx = similar(x,size(x,1),sum(k))
   starts = startofbags(k)
   for j in 1:length(k)
@@ -67,7 +67,7 @@ end
 """
 function gather(x,k::Int) 
   d, l = size(x,1), div(size(x,2),k)
-  reshape(sum(reshape(x,d,k,l),2),d,l)
+  reshape(sum(reshape(x,d,k,l), dims = 2),d,l)
 end
 
 function gather(x,k::Vector{Int})
@@ -93,5 +93,12 @@ function logsumexp(x,k::Int)
   xm .+ log.( sum( exp.(x .- xm),k))
 end
 
+function logsumexp(x)
+  xm = maximum(x)
+  xm .+ log.( sum( exp.(x .- xm)))
+end
+
 scatter(x::Flux.Tracker.TrackedMatrix, k) = Flux.Tracker.track(scatter,x, k )
-back(::typeof(scatter), Δ, x::AbstractMatrix, k) = Flux.Tracker.@back(x, gather(Δ, k))
+Flux.Tracker.@grad function scatter(x, k)
+  return scatter(Flux.data(x), k), Δ -> (gather(Δ, k), nothing)
+end

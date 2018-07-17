@@ -29,8 +29,8 @@ function layerbuilder(d::Int,k::Int,o::Int,n::Int,ftype::String,lastlayer::Strin
 	fs = Array{Any}(fill(eval(:($(Symbol(ftype)))),n))
 	ks = vcat(d,fill(k,n-1)...,o)
 	if !isempty(lastlayer)
-		fs[end] = (lastlayer == "linear")? identity : eval(:($(Symbol(lastlayer))))
-		ls[end] = (lastlayer == "linear")? Dense : ls[end]
+		fs[end] = (lastlayer == "linear") ? identity : eval(:($(Symbol(lastlayer))))
+		ls[end] = (lastlayer == "linear") ? Dense : ls[end]
 	end
 	layerbuilder(ks,ls,fs)
 end

@@ -1,5 +1,7 @@
 import Flux.Tracker.back
 import Base.*
+using SparseArrays
+
 function multrans(A::Matrix, B::SparseMatrixCSC)
   mA, nA = size(A)
   mB, nB = size(B)
@@ -34,15 +36,13 @@ function mul(A::Matrix, B::SparseMatrixCSC)
   return C
 end
 
-back(::typeof(*), Δ, a::AbstractMatrix, b::SparseMatrixCSC) = Flux.Tracker.@back(a, multrans(Δ,b))
-back(::typeof(mul), Δ, a::AbstractMatrix, b::SparseMatrixCSC) = Flux.Tracker.@back(a, multrans(Δ,b))
 a::Flux.Tracker.TrackedMatrix * b::SparseMatrixCSC = Flux.Tracker.track(mul, a, b)
+Flux.Tracker.@grad function mul(a::AbstractMatrix, b::SparseMatrixCSC)
+  return mul(Flux.data(a),b) , Δ -> (multrans(Δ, b),nothing)
+end
 
-# using CuArrays
-# using CUSPARSE
-# CuArrays.allowscalar(false)
-# back(::typeof(*), Δ, a::CuMatrix, b::CudaSparseMatrixCSC) = Flux.Tracker.@back(a, transpose(A_mul_Bt(b,Δ)))
-# back(::typeof(mul), Δ, a::CuMatrix, b::CudaSparseMatrixCSC) = Flux.Tracker.@back(a, transpose(A_mul_Bt(b,Δ)))
-# mul(A::CuMatrix{T},B::CudaSparseMatrixCSC{T}) where T = transpose(At_mul_Bt(A,B))
-# a::Flux.Tracker.TrackedMatrix * b::CudaSparseMatrixCSC = Flux.Tracker.TrackedArray(Flux.Tracker.Call(mul, a, b))
 
+w = param(randn(2,3));
+x = sprand(3,2,0.1);
+Flux.back!(sum(w*x))
+w.grad

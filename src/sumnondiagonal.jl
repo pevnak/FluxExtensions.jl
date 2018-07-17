@@ -1,5 +1,5 @@
 function sumnondiagonal(x::Matrix{T}) where {T}
-  assert(size(x,1) == size(x,2))
+  @assert size(x,1) == size(x,2)
   s = zero(T)
   @inbounds for j in 1:size(x,2)
     for i in 1:size(x,1)
@@ -10,8 +10,8 @@ function sumnondiagonal(x::Matrix{T}) where {T}
 end
 
 function backsumnondiagonal(x::AbstractMatrix,Δ::T) where {T}
-  assert(size(x,1) == size(x,2))
-  s = zeros(T,size(x))
+  @assert size(x,1) == size(x,2)
+  s = fill!(similar(x), zero(eltype(x)))
   @inbounds for j in 1:size(x,2)
     for i in 1:size(x,1)
       s[i,j] = (i == j) ? zero(T) : Δ
@@ -21,4 +21,6 @@ function backsumnondiagonal(x::AbstractMatrix,Δ::T) where {T}
 end
 
 sumnondiagonal(x::Flux.Tracker.TrackedMatrix) = Flux.Tracker.track(sumnondiagonal,x)
-back(::typeof(sumnondiagonal), Δ, x::AbstractMatrix) = Flux.Tracker.@back(x, backsumnondiagonal(x, Δ))
+Flux.Tracker.@grad function sumnondiagonal(x)
+  return sumnondiagonal(Flux.data(x)) , Δ -> (backsumnondiagonal(Flux.data(x),Δ),)
+end

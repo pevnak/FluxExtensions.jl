@@ -1,4 +1,4 @@
-name = "FluxExtension"
+name = "FluxExtensions"
 uuid = "76425322-8995-11e8-0106-93ec95767fb2"
 authors = ["Tomas Pevny <pevnak@protonmail.ch>", "Simon Mandlik <simon.mandlik@gmail.com>"]
 version = "0.1.0"

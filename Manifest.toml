@@ -129,14 +129,6 @@ repo-url = "https://github.com/FluxML/Flux.jl.git"
 uuid = "587475ba-b771-5e3f-ad9e-33799f191a9c"
 version = "0.5.3+"
 
-[[FluxExtensions]]
-deps = ["Test"]
-git-tree-sha1 = "4b5779bee74c316ca662cdb5bad274d38d3d6dd4"
-repo-rev = "v0.7"
-repo-url = "https://github.com/pevnak/FluxExtensions.jl.git"
-uuid = "748ba324-3f4b-5fb5-a069-be7e4fbd4f03"
-version = "0.0.0"
-
 [[ForwardDiff]]
 deps = ["CommonSubexpressions", "Compat", "DiffResults", "DiffRules", "NaNMath", "SpecialFunctions", "StaticArrays"]
 git-tree-sha1 = "1c15726e82a01b42fc0f91e1220a99da6b8d7734"

@@ -26,9 +26,11 @@ version = "0.3.3"
 
 [[CSV]]
 deps = ["CategoricalArrays", "Compat", "DataFrames", "DataStreams", "Dates", "InternedStrings", "Missings", "Test", "WeakRefStrings"]
-git-tree-sha1 = "9d62d3d577895a1e0b0bacd211a788be70127165"
+git-tree-sha1 = "73539d2e1e6b56a6f732ada6bc8d2391ac69dd87"
+repo-rev = "nl/0.7"
+repo-url = "https://github.com/JuliaData/CSV.jl.git"
 uuid = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-version = "0.2.5"
+version = "0.2.5+"
 
 [[CategoricalArrays]]
 deps = ["Compat", "Future", "JSON", "Missings", "Printf", "Reexport"]
@@ -67,22 +69,18 @@ uuid = "34da2185-b29b-5c13-b0c7-acf172513d20"
 version = "0.70.0"
 
 [[Contour]]
-deps = ["Compat", "StaticArrays"]
-git-tree-sha1 = "7362b76e9939964a94fd39430bc901092c371d21"
+deps = ["LinearAlgebra", "StaticArrays", "Test"]
+git-tree-sha1 = "4e244ce551b993b721a6dbbd040b5f3d7cba0f48"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
-version = "0.4.0"
-
-[[DataFlow]]
-deps = ["Juno", "Lazy", "MacroTools"]
-git-tree-sha1 = "a493f7e35bddcacb19248a8d3826dd42ac4dd2ce"
-uuid = "a237f610-4214-5ca7-a9c6-385896804134"
-version = "0.3.1"
+version = "0.5.0"
 
 [[DataFrames]]
-deps = ["CategoricalArrays", "CodecZlib", "Compat", "DataStreams", "Missings", "Reexport", "SortingAlgorithms", "StatsBase", "TranscodingStreams", "WeakRefStrings"]
-git-tree-sha1 = "be4d979564837fbb6be9eb4872ab7352bbc32e71"
+deps = ["CategoricalArrays", "CodecZlib", "Compat", "DataStreams", "Dates", "LinearAlgebra", "Missings", "Printf", "Random", "Reexport", "SortingAlgorithms", "Statistics", "StatsBase", "Test", "TranscodingStreams", "Unicode", "WeakRefStrings"]
+git-tree-sha1 = "5955bfbbbd8184d3cdd10d9ef59b27063da95847"
+repo-rev = "0.7cleanup"
+repo-url = "https://github.com/JuliaData/DataFrames.jl.git"
 uuid = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-version = "0.11.6"
+version = "0.11.7+"
 
 [[DataStreams]]
 deps = ["Compat", "Missings", "NamedTuples", "WeakRefStrings"]
@@ -124,10 +122,20 @@ uuid = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
 version = "0.5.1"
 
 [[Flux]]
-deps = ["AbstractTrees", "Adapt", "Colors", "DataFlow", "DiffRules", "ForwardDiff", "GZip", "Juno", "MacroTools", "NNlib", "NaNMath", "Reexport", "Requires", "SpecialFunctions", "ZipFile"]
-git-tree-sha1 = "f6c14c9d012875cb0b04d0d788c49be55761c10d"
+deps = ["AbstractTrees", "Adapt", "Colors", "DiffRules", "ForwardDiff", "GZip", "LinearAlgebra", "MacroTools", "NNlib", "NaNMath", "Reexport", "Requires", "SpecialFunctions", "StatsBase", "ZipFile"]
+git-tree-sha1 = "66e769fd696b420560baa980405e9d63f5133414"
+repo-rev = "julia-0.7"
+repo-url = "https://github.com/FluxML/Flux.jl.git"
 uuid = "587475ba-b771-5e3f-ad9e-33799f191a9c"
-version = "0.5.3"
+version = "0.5.3+"
+
+[[FluxExtensions]]
+deps = ["Test"]
+git-tree-sha1 = "4b5779bee74c316ca662cdb5bad274d38d3d6dd4"
+repo-rev = "v0.7"
+repo-url = "https://github.com/pevnak/FluxExtensions.jl.git"
+uuid = "748ba324-3f4b-5fb5-a069-be7e4fbd4f03"
+version = "0.0.0"
 
 [[ForwardDiff]]
 deps = ["CommonSubexpressions", "Compat", "DiffResults", "DiffRules", "NaNMath", "SpecialFunctions", "StaticArrays"]
@@ -164,18 +172,6 @@ deps = ["Dates", "Distributed", "Mmap", "Sockets", "Test", "Unicode"]
 git-tree-sha1 = "723a515212612b2175095fa5fa55da0bb4c377e5"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 version = "0.18.0"
-
-[[Juno]]
-deps = ["Media"]
-git-tree-sha1 = "3519243f4b170061de4c1a96e536850e8bcf688b"
-uuid = "e5e0dc1b-0480-54bc-9374-aad01c23163d"
-version = "0.4.1"
-
-[[Lazy]]
-deps = ["Compat", "MacroTools"]
-git-tree-sha1 = "1dea2ef59fab543a5b1ce066b678dcdd70d21abf"
-uuid = "50d2b5c4-7a5e-59d5-8109-a42b560f39c0"
-version = "0.12.1"
 
 [[LearnBase]]
 deps = ["Compat", "StatsBase"]
@@ -225,12 +221,6 @@ git-tree-sha1 = "9cdd05418a7f2f7ce534014285edf01f465d6961"
 uuid = "442fdcdd-2543-5da2-b0f3-8c86c306513e"
 version = "0.2.0"
 
-[[Media]]
-deps = ["MacroTools", "Test"]
-git-tree-sha1 = "9cc7fc9d0e3e7e4ecb1f1b81209f9dc626e893f1"
-uuid = "e89f7d12-3494-54d1-8411-f7d8b9ae1f27"
-version = "0.4.0"
-
 [[Missings]]
 deps = ["Compat"]
 git-tree-sha1 = "866fb034899be6055dcb6cb1a70fbda379bb0b55"
@@ -242,9 +232,11 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[NNlib]]
 deps = ["Libdl", "LinearAlgebra", "MacroTools", "Requires", "Test"]
-git-tree-sha1 = "83dd97789dcd7718ae4f62ac7104e575894b7368"
+git-tree-sha1 = "b1cad80db291ec2009435519856f2f5863efef75"
+repo-rev = "julia-0.7"
+repo-url = "https://github.com/FluxML/NNlib.jl.git"
 uuid = "872c559c-99b0-510c-b3b7-b6c96a88d5cd"
-version = "0.4.0"
+version = "0.4.0+"
 
 [[NaNMath]]
 git-tree-sha1 = "3b18ebac4cc5f22fe5af9b4aa63210ae4495507a"
@@ -272,10 +264,12 @@ uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "0.5.0"
 
 [[Plots]]
-deps = ["Contour", "FixedPointNumbers", "GR", "JSON", "Measures", "NaNMath", "PlotThemes", "PlotUtils", "RecipesBase", "Reexport", "Requires", "Showoff", "StaticArrays", "StatsBase"]
-git-tree-sha1 = "a89a0fc4b7b1973944d4617f00bb93ec37301bb3"
+deps = ["Base64", "Contour", "Dates", "FixedPointNumbers", "GR", "JSON", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "Printf", "REPL", "RecipesBase", "Reexport", "Requires", "Showoff", "StaticArrays", "Statistics", "StatsBase", "Test"]
+git-tree-sha1 = "39a7cf1c8a79f05bdf71f33d3abe8e707edffaed"
+repo-rev = "julia0.7"
+repo-url = "https://github.com/JuliaPlots/Plots.jl.git"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-version = "0.17.3"
+version = "0.17.3+"
 
 [[Printf]]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
@@ -361,9 +355,9 @@ uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[TranscodingStreams]]
 deps = ["Compat", "Random", "Test"]
-git-tree-sha1 = "497524e8b703e67caf20cc086d20235852041fe4"
+git-tree-sha1 = "d10e1e4b8fb8c6c50a1458c8e0de8f7abd0fc144"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
-version = "0.5.2"
+version = "0.5.3"
 
 [[URIParser]]
 deps = ["Compat", "Unicode"]

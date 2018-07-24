@@ -10,6 +10,20 @@ weighted_logit_cross_entropy(logit, y::AbstractMatrix, w) = -sum(y.*w.*(logit.-l
 
 entropy(x,dim::Int=1) = -mean(sum(x .* log.(x),dim))
 
+function classweightvector(y::AbstractArray{T},classweights::Vector{S}) where {T<:Integer,S<:AbstractFloat}
+  classweights = classweights./sum(classweights)
+  w=ones(S,size(y,1))
+  classsizes = StatsBase.countmap(y)
+  for j in 1:size(y,1)
+    w[j] = classweights[y[j]]/classsizes[y[j]]
+  end
+  if sum(isnan.(w))>0 || sum(isinf.(w))>0
+    save("error.jld","y",y,"classweights",classweights)
+    error("nans or infs in classweights")
+  end
+  w
+end
+
 function confusion(y,pred,k)
 	c = zeros(Int,k,k)
 	foreach(i -> c[i[1],i[2]] += 1, zip(y,pred))

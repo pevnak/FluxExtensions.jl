@@ -42,4 +42,5 @@ restoremodel!(m,p) = foreach(a -> copy!(Flux.data(a[1]),a[2]),zip(Flux.params(m)
 
 
 export ResDense, restoremodel, layerbuilder
+export logit_cross_entropy, weighted_logit_cross_entropy, classweightvector
 end # module

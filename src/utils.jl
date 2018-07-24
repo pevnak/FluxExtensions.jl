@@ -1,8 +1,6 @@
 adapt(T, x::Array) = T.(x)
 adapt(T, m::Flux.Dense) = Flux.Dense(adapt(T,m.W),adapt(T,m.b),m.σ)
 
-using FluxExtensions: logsumexp
-
 logit_cross_entropy(logit, y) = -sum(y.*(logit.-logsumexp(logit, 1))) / size(logit,2)
 
 weighted_logit_cross_entropy(logit, y::AbstractVector, w) = weighted_logit_cross_entropy(logit, Flux.onehotbatch(y, 1:size(logit,1)), w)

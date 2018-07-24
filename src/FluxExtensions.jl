@@ -5,12 +5,12 @@ import Adapt: adapt
 
 include("layers/resdense.jl")
 include("layers/layerbuilder.jl")
+include("scatter.jl")
 include("utils.jl")
 include("learn.jl")
 # include("plot.jl")
 include("sparse.jl")
 include("sumnondiagonal.jl")
-include("scatter.jl")
 include("search/evaluation.jl")
 
 

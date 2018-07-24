@@ -8,6 +8,8 @@ weighted_logit_cross_entropy(logit, y::AbstractMatrix, w) = -sum(y.*w.*(logit.-l
 
 entropy(x,dim::Int=1) = -mean(sum(x .* log.(x),dim))
 
+using StatsBase
+
 function classweightvector(::Type{S},y::Vector{T}) where {S<:AbstractFloat,T<:Integer}
   w=ones(S,size(y,1))
   classsizes = StatsBase.countmap(y)

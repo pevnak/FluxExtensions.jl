@@ -4,7 +4,7 @@ function sumnondiagonal(x::Matrix{T}) where {T}
   @inbounds for j in 1:size(x,2)
     for i in 1:size(x,1)
       s += (i == j) ? zero(T) : x[i,j]
-    end 
+    end
   end
   s
 end
@@ -15,10 +15,12 @@ function backsumnondiagonal(x::AbstractMatrix,Δ::T) where {T}
   @inbounds for j in 1:size(x,2)
     for i in 1:size(x,1)
       s[i,j] = (i == j) ? zero(T) : Δ
-    end 
+    end
   end
   s
 end
 
 sumnondiagonal(x::Flux.Tracker.TrackedMatrix) = Flux.Tracker.track(sumnondiagonal,x)
+
+import Flux: back
 back(::typeof(sumnondiagonal), Δ, x::AbstractMatrix) = Flux.Tracker.@back(x, backsumnondiagonal(x, Δ))

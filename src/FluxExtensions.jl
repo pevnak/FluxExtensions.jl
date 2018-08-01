@@ -10,6 +10,7 @@ include("utils.jl")
 # include("plot.jl")
 include("sparse.jl")
 include("sumnondiagonal.jl")
+include("lbfgs.jl")
 include("search/evaluation.jl")
 
 

@@ -7,9 +7,9 @@ weighted_logit_cross_entropy(logit, y, w::AbstractVector) = weighted_logit_cross
 weighted_logit_cross_entropy(logit, y::AbstractVector, w::AbstractMatrix) = weighted_logit_cross_entropy(logit, Flux.onehotbatch(y, 1:size(logit,1)), w)
 weighted_logit_cross_entropy(logit, y::AbstractMatrix, w::AbstractMatrix) = -sum(y.*w.*(logit.-logsumexp(logit, 1)))
 
-entropy(x,dim::Int=1) = -mean(sum(x .* log.(x),dim))
+entropy_dim(x,dim::Int=1) = -mean(sum(x .* log.(x),dim))
 
-using StatsBase
+using StatsBase: countmap
 
 function classweightvector(::Type{S},y::Vector{T}) where {S<:AbstractFloat,T<:Integer}
   w=ones(S,size(y,1))

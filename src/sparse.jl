@@ -34,9 +34,10 @@ function mul(A::Matrix, B::SparseMatrixCSC)
   return C
 end
 
-back(::typeof(*), Δ, a::AbstractMatrix, b::SparseMatrixCSC) = Flux.Tracker.@back(a, multrans(Δ,b))
-back(::typeof(mul), Δ, a::AbstractMatrix, b::SparseMatrixCSC) = Flux.Tracker.@back(a, multrans(Δ,b))
+back(::typeof(*), Δ, a::AbstractMatrix, b::SparseMatrixCSC) = Flux.Tracker.back(a, multrans(Δ,b))
+back(::typeof(mul), Δ, a::AbstractMatrix, b::SparseMatrixCSC) = Flux.Tracker.back(a, multrans(Δ,b))
 a::Flux.Tracker.TrackedMatrix * b::SparseMatrixCSC = Flux.Tracker.track(mul, a, b)
+
 
 # using CuArrays
 # using CUSPARSE

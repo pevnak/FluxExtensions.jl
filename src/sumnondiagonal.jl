@@ -21,6 +21,6 @@ function backsumnondiagonal(x::AbstractMatrix,Δ::T) where {T}
 end
 
 sumnondiagonal(x::Flux.Tracker.TrackedMatrix) = Flux.Tracker.track(sumnondiagonal,x)
-
-import Flux: back
-back(::typeof(sumnondiagonal), Δ, x::AbstractMatrix) = Flux.Tracker.@back(x, backsumnondiagonal(x, Δ))
+Flux.Tracker.@grad function sumnondiagonal(x)
+  return(sumnondiagonal(Flux.data(x)), Δ -> (backsumnondiagonal(x , Δ),))
+end

@@ -94,4 +94,6 @@ function logsumexp(x,k::Int)
 end
 
 scatter(x::Flux.Tracker.TrackedMatrix, k) = Flux.Tracker.track(scatter,x, k )
-back(::typeof(scatter), Δ, x::AbstractMatrix, k) = Flux.Tracker.@back(x, gather(Δ, k))
+Flux.Tracker.@grad function scatter(x,k)
+  return(scatter(Flux.data(x), k), Δ -> (gather(Δ, k), nothing))
+end

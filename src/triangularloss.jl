@@ -30,4 +30,6 @@ function triangularloss_back(d, y, Δ)
 end
 
 triangularloss(d::Flux.Tracker.TrackedArray, y) = Flux.Tracker.track(triangularloss, d, y)
-Flux.Tracker.back(::typeof(triangularloss), Δ, d::Flux.Tracker.TrackedArray, y) = Flux.Tracker.back(d, triangularloss_back(d.data, y, Δ))
+Flux.Tracker.@grad function triangularloss(d, y)
+  return(triangularloss(Flux.data(d), y), Δ -> (triangularloss_back(d, y, Δ),nothing))
+end

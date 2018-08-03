@@ -12,7 +12,7 @@ include("sparse.jl")
 include("sumnondiagonal.jl")
 include("lbfgs.jl")
 include("search/evaluation.jl")
-
+include("triangularloss.jl")
 
 freeze(m) = Flux.mapleaves(Flux.Tracker.data,m)
 

@@ -11,7 +11,7 @@ end
 
 function backsumnondiagonal(x::AbstractMatrix,Δ::T) where {T}
   @assert size(x,1) == size(x,2)
-  s = fill!(similar(x), zero(eltype(x)))
+  s = zero(x)
   @inbounds for j in 1:size(x,2)
     for i in 1:size(x,1)
       s[i,j] = (i == j) ? zero(T) : Δ

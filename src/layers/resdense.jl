@@ -1,5 +1,5 @@
 struct ResDense{A,B,D}
-	a::A 		# Dense layer to align dimensions 
+	a::A 		# Dense layer to align dimensions
 	b::B 		# Matrix with parameters
 	d::D 		# nothing or Matrix with parameters used to align dimensions
 end
@@ -14,11 +14,9 @@ end
 
 function Base.show(io::IO, l::ResDense)
   print(io, "ResDense(");
-  print(io,l.a)
+  print(io, l.d == nothing ? l.a : (size(l.d.data, 2), size(l.d.data, 1)))
   print(io, ")")
 end
 
-
-
-Flux.@treelike ResDense
+Flux.treelike(ResDense)
 adapt(T, m::ResDense) = ResDense(adapt(T,m.a),adapt(T,m.b),adapt(T,m.d))

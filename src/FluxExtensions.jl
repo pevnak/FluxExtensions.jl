@@ -7,13 +7,13 @@ import LinearAlgebra: diag
 include("layers/resdense.jl")
 include("layers/layerbuilder.jl")
 include("utils.jl")
-include("learn.jl")
 # include("plot.jl")
 include("sparse.jl")
 include("sumnondiagonal.jl")
 include("scatter.jl")
+include("lbfgs.jl")
 include("search/evaluation.jl")
-
+# include("triangularloss.jl")
 
 freeze(m) = Flux.mapleaves(Flux.Tracker.data,m)
 
@@ -43,4 +43,5 @@ restoremodel!(m,p) = foreach(a -> copy!(Flux.data(a[1]),a[2]),zip(Flux.params(m)
 
 
 export ResDense, restoremodel, layerbuilder
+export logit_cross_entropy, weighted_logit_cross_entropy, classweightvector
 end # module

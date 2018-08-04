@@ -41,8 +41,10 @@ Flux.Tracker.@grad function mul(a::AbstractMatrix, b::SparseMatrixCSC)
   return mul(Flux.data(a),b) , Δ -> (multrans(Δ, b),nothing)
 end
 
-
-w = param(randn(2,3));
-x = sprand(3,2,0.1);
-Flux.back!(sum(w*x))
-w.grad
+# using CuArrays
+# using CUSPARSE
+# CuArrays.allowscalar(false)
+# back(::typeof(*), Δ, a::CuMatrix, b::CudaSparseMatrixCSC) = Flux.Tracker.@back(a, transpose(A_mul_Bt(b,Δ)))
+# back(::typeof(mul), Δ, a::CuMatrix, b::CudaSparseMatrixCSC) = Flux.Tracker.@back(a, transpose(A_mul_Bt(b,Δ)))
+# mul(A::CuMatrix{T},B::CudaSparseMatrixCSC{T}) where T = transpose(At_mul_Bt(A,B))
+# a::Flux.Tracker.TrackedMatrix * b::CudaSparseMatrixCSC = Flux.Tracker.TrackedArray(Flux.Tracker.Call(mul, a, b))

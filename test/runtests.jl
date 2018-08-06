@@ -6,6 +6,7 @@ using Flux.Tracker: TrackedReal, gradcheck
 
 # include("utils.jl")
 include("layers/resdense.jl")
+include("pdfs.jl")
 # include("triangularloss.jl")
 
 

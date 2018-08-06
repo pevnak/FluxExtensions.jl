@@ -10,7 +10,14 @@ pairwisel2(x,y) = -2 .* x' * y .+ sum(x.^2,1)' .+ sum(y.^2,1)
 
 """
 	scaled_pairwisel2(x::M, y::M, σ::M) where {M<:Matrix}
-	when x,y, and σ are matrices, than ``o_{i,j} = \\frac{x_i - y_j}{σ_i}`` where `σ` are treated as a column vectors
+	when x,y, and σ are matrices, than ``o_{i,j} = \\frac{x_i - y_j}{σ_i}`` where `σ` are treated as a column vectors.
+
+	if σ is:
+		- Number means a σ shared by all `x`
+		- Vector means a σ is diagonal shared by all `x`
+		- RowVector means each column of `x` has its own scalar σ
+		- Matrix means each column of `x` has its own scalar diagonal σ
+
 
 """
 scaled_pairwisel2(x, y, σ::T) where {T<: Union{Real,TrackedReal}} = pairwisel2(x, y) ./ σ^2
@@ -59,7 +66,15 @@ end
 	probability density of Normal Distribution of samples in `x` (each column is 
 	one sample) with respect to a series of Normal Distributions defined 
 	by centers in `c` (each columns is one center) and standard deviation σ
+	if σ is:
 
+		- Number means a σ shared by all centers
+		- Vector means a σ is diagonal shared by all centers
+		- RowVector means each center has its own scalar σ
+		- Matrix means each center has its own scalar diagonal σ
+		
+
+	This should be compatible with Flux
 """
 pdf_normal(x, c, σ ::T) where {T<:Real} = exp.(- 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π*σ^2)/2)
 pdf_normal(x, c, σ ::T) where {T<:Union{RowVector, TrackedArray{T, N, A} where {T, N, A<: RowVector}}} = exp.(- 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- size(x,1)*log.(σ'))

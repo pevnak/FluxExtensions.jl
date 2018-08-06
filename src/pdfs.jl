@@ -1,47 +1,57 @@
+using Flux.Tracker: TrackedArray, TrackedReal
 """
 	pairwisel2(x,y)
-	pairwisel2(x, y::Y, σ::S)
-
-	pairwise distances between `x` and `y` using Euclidean Distance 
-
+	
+	pairwise distances between `x` and `y` using Euclidean Distance.
+	
 """
 pairwisel2(x,y) = -2 .* x' * y .+ sum(x.^2,1)' .+ sum(y.^2,1)
-function pairwisel2(x::M, y::M, σ::M) where {M<:Matrix}
-	# assert((size(y, 1) = size(σ, 1) ) && (size(y, 2) == size(σ, 2)))
+
+
+"""
+	scaled_pairwisel2(x::M, y::M, σ::M) where {M<:Matrix}
+	when x,y, and σ are matrices, than ``o_{i,j} = \\frac{x_i - y_j}{σ_i}`` where `σ` are treated as a column vectors
+
+"""
+scaled_pairwisel2(x, y, σ::T) where {T<: Union{Real,TrackedReal}} = pairwisel2(x, y) ./ σ^2
+scaled_pairwisel2(x, y, σ::T) where {T<:Union{AbstractVector, TrackedArray{T, N, A} where {T, N, A<: AbstractVector}}} = pairwisel2(x ./σ, y./σ)
+scaled_pairwisel2(x, y, σ::T) where {T<:Union{RowVector, TrackedArray{T, N, A} where {T, N, A<: RowVector}}} = pairwisel2(x, y) ./ (σ'.^2)
+
+function scaled_pairwisel2(x::M, y::N, σ::S) where {M<:Matrix, N<:Matrix, S<:Matrix}
+	assert( (size(y, 1) == size(σ, 1) ) && (size(x, 2) == size(σ, 2)) && (size(x, 1) == size(y, 1)))
 	o = zeros(size(x,2), size(y,2))
-	for i in 1:size(y,2)
+	@inbounds for i in 1:size(y,2)
 		for j in 1:size(x,2)
 			for k in 1:size(x,1)
-				o[j,i] += ((x[k,j] - y[k,i])/σ[k,i])^2
+				o[j,i] += ((x[k,j] - y[k,i])/σ[k,j])^2
 			end 
 		end 
 	end
 	o
 end
 
-
-function pairwisel2_back(Δ, x::M, y::M, σ::M) where {M<:Matrix}
+function scaled_pairwisel2_back(Δ, x, y, σ)
+	assert( (size(y, 1) == size(σ, 1) ) && (size(x, 2) == size(σ, 2)) && (size(x, 1) == size(y, 1)))
 	∇x = zero(x)
 	∇y = zero(y)
 	∇σ = zero(σ)
-	for i in 1:size(y,2)
+	@inbounds for i in 1:size(y,2)
 		for j in 1:size(x,2)
 			for k in 1:size(x,1)
 				δ = x[k,j] - y[k,i]
-				∇x[k,j] += 2*Δ[j,i]*δ/σ[k,i]^2
-				∇y[k,i] -= 2*Δ[j,i]*δ/σ[k,i]^2
-				∇σ[k,i] -= 2*Δ[j,i]*δ^2/σ[k,i]^3
+				∇x[k,j] += 2*Δ[j,i]*δ/σ[k,j]^2
+				∇y[k,i] -= 2*Δ[j,i]*δ/σ[k,j]^2
+				∇σ[k,j] -= 2*Δ[j,i]*δ^2/σ[k,j]^3
 			end 
 		end 
 	end
 	(∇x, ∇y, ∇σ)
 end
-pairwisel2(x, y, σ) = Flux.Tracker.track(pairwisel2_back, x, y, σ)
-Flux.Tracker.@grad function pairwisel2_back(x, y, σ)
-  return(pairwisel2(Flux.data(x), Flux.data(y), Flux.data(σ)), Δ -> pairwisel2_back(Δ, Flux.data(x), Flux.data(y), Flux.data(σ)))
+
+scaled_pairwisel2(x, y, σ) = Flux.Tracker.track(scaled_pairwisel2, x, y, σ)
+Flux.Tracker.@grad function scaled_pairwisel2(x, y, σ)
+  return(scaled_pairwisel2(Flux.data(x), Flux.data(y), Flux.data(σ)), Δ -> scaled_pairwisel2_back(Δ, Flux.data(x), Flux.data(y), Flux.data(σ)))
 end
-
-
 
 """
 	pdf_normal(x,c,σ2::T)
@@ -51,17 +61,10 @@ end
 	by centers in `c` (each columns is one center) and standard deviation σ
 
 """
-pdf_normal(x,c,σ ::T) where {T<:Real} = exp.(- 0.5 .* pairwisel2(c, x) ./ σ^2	 .- size(x,1)*log(2π*σ^2)/2)
-function pdf_normal(x,c,σ::T) where {T<:AbstractMatrix} 
-	assert(size(c,2) == size(σ,2))
-
-	mapreduce(vcat,1:size(σ,2)) do i
-		cc = c[:,i] ./ σ[:,i]
-		xx = x ./ σ[:,i]
-		exp.(- 0.5 .* pairwisel2(cc, xx) .-size(x,1)*log(2π)/2 .- sum(log.(σ[:,i])))
-	end
-end
-
+pdf_normal(x, c, σ ::T) where {T<:Real} = exp.(- 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π*σ^2)/2)
+pdf_normal(x, c, σ ::T) where {T<:Union{RowVector, TrackedArray{T, N, A} where {T, N, A<: RowVector}}} = exp.(- 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- size(x,1)*log.(σ'))
+pdf_normal(x, c, σ ::T) where {T<:AbstractVector} = exp.(- 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- sum(log.(σ)))
+pdf_normal(x, c, σ ::T) where {T<:AbstractMatrix} = exp.(- 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- sum(log.(σ), 1)')
 
 """
 		kldiv(μ,σ2)

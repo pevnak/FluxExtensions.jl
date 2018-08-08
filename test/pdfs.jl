@@ -60,10 +60,10 @@ end
 	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(log_normal(c, x, σ)), x, c, σ2)
 end
 
-@testset "testing pdf of multivariate normal distribution with a RowVector σ" begin
+@testset "testing pdf of multivariate normal distribution with a Transpose σ" begin
 	x = randn(2,3)
 	c = randn(2,4)
-	σ2 = RowVector(rand(4))
+	σ2 = Transpose(rand(4))
 	o = pdf_normal(x, c, σ2)
 	for i in 1:size(c,2)
 		@test all(abs.(pdf(MvNormal(c[:,i],σ2[i]),x) .- o[i,:]) .< 1e-8)

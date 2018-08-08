@@ -1,6 +1,6 @@
 using Distributions, Base.Test, FluxExtensions, Distances
 using Flux: param
-import FluxExtensions: pdf_normal, pairwisel2, scaled_pairwisel2
+using FluxExtensions: pdf_normal, log_normal, pairwisel2, scaled_pairwisel2
 
 @testset "testing pairwise function" begin 
 	x =  [-0.0953253   1.3719  -0.61826; -0.0734501  -1.4168   0.258718];
@@ -33,7 +33,14 @@ end
 	for i in 1:size(c,2)
 		@test all(abs.(pdf(MvNormal(c[:,i],fill(σ2,2)),x) .- o[i,:]) .< 1e-8)
 	end
-	@test Flux.Tracker.gradcheck((x,c) -> sum(scaled_pairwisel2(c, x, σ)), x, c)
+
+	σ2 = 0.5
+	o = log_normal(x,c,σ2)
+	for i in 1:size(c,2)
+		@test all(abs.(logpdf(MvNormal(c[:,i],fill(σ2,2)),x) .- o[i,:]) .< 1e-8)
+	end
+	@test Flux.Tracker.gradcheck((x,c) -> sum(pdf_normal(c, x, σ2)), x, c)
+	@test Flux.Tracker.gradcheck((x,c) -> sum(log_normal(c, x, σ2)), x, c)
 end
 
 @testset "testing pdf of multivariate normal distribution with a vector σ" begin
@@ -44,7 +51,12 @@ end
 	for i in 1:size(c,2)
 		@test all(abs.(pdf(MvNormal(c[:,i],σ2),x) .- o[i,:]) .< 1e-8)
 	end
-	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(scaled_pairwisel2(c, x, σ)), x, c, σ2)
+	o = log_normal(x, c, σ2)
+	for i in 1:size(c,2)
+		@test all(abs.(logpdf(MvNormal(c[:,i],σ2),x) .- o[i,:]) .< 1e-8)
+	end
+	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(pdf_normal(c, x, σ)), x, c, σ2)
+	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(log_normal(c, x, σ)), x, c, σ2)
 end
 
 @testset "testing pdf of multivariate normal distribution with a RowVector σ" begin
@@ -55,7 +67,13 @@ end
 	for i in 1:size(c,2)
 		@test all(abs.(pdf(MvNormal(c[:,i],σ2[i]),x) .- o[i,:]) .< 1e-8)
 	end
-	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(scaled_pairwisel2(c, x, σ)), x, c, σ2)
+
+	o = log_normal(x, c, σ2)
+	for i in 1:size(c,2)
+		@test all(abs.(logpdf(MvNormal(c[:,i],σ2[i]),x) .- o[i,:]) .< 1e-8)
+	end
+	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(pdf_normal(c, x, σ)), c, x, σ2)
+	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(log_normal(c, x, σ)), c, x, σ2)
 end
 
 
@@ -67,6 +85,11 @@ end
 	for i in 1:size(c,2)
 		@test all(abs.(pdf(MvNormal(c[:,i],σ2[:,i]),x) .- o[i,:]) .< 1e-8)
 	end
-	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(scaled_pairwisel2(c, x, σ)), x, c, σ2)
+	o = log_normal(x, c, σ2)
+	for i in 1:size(c,2)
+		@test all(abs.(logpdf(MvNormal(c[:,i],σ2[:,i]),x) .- o[i,:]) .< 1e-8)
+	end
+	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(pdf_normal(x, c, σ)), x, c, σ2)
+	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(log_normal(x, c, σ)), x, c, σ2)
 end
 

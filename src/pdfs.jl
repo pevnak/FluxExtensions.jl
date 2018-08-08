@@ -24,7 +24,7 @@ scaled_pairwisel2(x, y, σ::T) where {T<: Union{Real,TrackedReal}} = pairwisel2(
 scaled_pairwisel2(x, y, σ::T) where {T<:Union{AbstractVector, TrackedArray{T, N, A} where {T, N, A<: AbstractVector}}} = pairwisel2(x ./σ, y./σ)
 scaled_pairwisel2(x, y, σ::T) where {T<:Union{RowVector, TrackedArray{T, N, A} where {T, N, A<: RowVector}}} = pairwisel2(x, y) ./ (σ'.^2)
 
-function scaled_pairwisel2(x::M, y::N, σ::S) where {M<:Matrix, N<:Matrix, S<:Matrix}
+function _scaled_pairwisel2(x, y, σ)
 	assert( (size(y, 1) == size(σ, 1) ) && (size(x, 2) == size(σ, 2)) && (size(x, 1) == size(y, 1)))
 	o = zeros(size(x,2), size(y,2))
 	@inbounds for i in 1:size(y,2)
@@ -37,7 +37,7 @@ function scaled_pairwisel2(x::M, y::N, σ::S) where {M<:Matrix, N<:Matrix, S<:Ma
 	o
 end
 
-function scaled_pairwisel2_back(Δ, x, y, σ)
+function _scaled_pairwisel2_back(Δ, x, y, σ)
 	assert( (size(y, 1) == size(σ, 1) ) && (size(x, 2) == size(σ, 2)) && (size(x, 1) == size(y, 1)))
 	∇x = zero(x)
 	∇y = zero(y)
@@ -55,9 +55,10 @@ function scaled_pairwisel2_back(Δ, x, y, σ)
 	(∇x, ∇y, ∇σ)
 end
 
-scaled_pairwisel2(x, y, σ) = Flux.Tracker.track(scaled_pairwisel2, x, y, σ)
+scaled_pairwisel2(x::Matrix, y::Matrix, σ::Matrix) = _scaled_pairwisel2(x, y, σ)
+scaled_pairwisel2(x, y, σ::S) where {S<:Union{Matrix, TrackedArray{T, N, A} where {T, N, A<: Matrix}}} = Flux.Tracker.track(scaled_pairwisel2, x, y, σ)
 Flux.Tracker.@grad function scaled_pairwisel2(x, y, σ)
-  return(scaled_pairwisel2(Flux.data(x), Flux.data(y), Flux.data(σ)), Δ -> scaled_pairwisel2_back(Δ, Flux.data(x), Flux.data(y), Flux.data(σ)))
+  return(_scaled_pairwisel2(Flux.data(x), Flux.data(y), Flux.data(σ)), Δ -> _scaled_pairwisel2_back(Flux.data(Δ), Flux.data(x), Flux.data(y), Flux.data(σ)))
 end
 
 """
@@ -81,6 +82,13 @@ pdf_normal(x, c, σ ::T) where {T<:Union{RowVector, TrackedArray{T, N, A} where 
 pdf_normal(x, c, σ ::T) where {T<:AbstractVector} = exp.(- 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- sum(log.(σ)))
 pdf_normal(x, c, σ ::T) where {T<:AbstractMatrix} = exp.(- 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- sum(log.(σ), 1)')
 
+log_normal(x, c, σ ::T) where {T<:Real} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π*σ^2)/2
+log_normal(x, c, σ ::T) where {T<:Union{RowVector, TrackedArray{T, N, A} where {T, N, A<: RowVector}}} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- size(x,1)*log.(σ')
+log_normal(x, c, σ ::T) where {T<:AbstractVector} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- sum(log.(σ))
+log_normal(x, c, σ ::T) where {T<:AbstractMatrix} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- sum(log.(σ), 1)'
+log_normal(x) = - sum((@. x^2), 1)/2 - size(x,1)*log(2π)/2
+log_normal(x,μ) = - sum((@. (x - μ)^2), 1) / 2 - size(x,1)*log(2π)/2
+
 """
 		kldiv(μ,σ2)
 
@@ -95,9 +103,6 @@ kldiv(μ,σ2) = - mean(sum((@.log(σ2) - μ^2 - σ2), 1))
 		log-likelihood of x to the Normal with centre at mu
 
 """
-log_normal(x) = - sum((@. x^2), 1)/2 - size(x,1)*log(2π)/2
-log_normal(x,μ) = - sum((@. (x - μ)^2), 1) / 2 - size(x,1)*log(2π)/2
-log_normal(x,μ,σ2::T) where {T<:Real} = - sum((@. (x - μ)^2/σ2 + log(σ2)), 1)/2 - size(x,1)*log(2π)/2
 
 log_bernoulli(x::AbstractMatrix,θ::AbstractVector) = log.(θ)' * x
 log_bernoulli(x::AbstractMatrix,θ::AbstractMatrix) = sum(x .* log.(θ),1)

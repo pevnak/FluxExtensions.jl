@@ -1,6 +1,7 @@
-using Distributions, Base.Test, FluxExtensions, Distances
+using Distributions, Test, FluxExtensions, Distances
 using Flux: param
 using FluxExtensions: pdf_normal, log_normal, pairwisel2, scaled_pairwisel2
+using LinearAlgebra
 
 @testset "testing pairwise function" begin 
 	x =  [-0.0953253   1.3719  -0.61826; -0.0734501  -1.4168   0.258718];
@@ -10,7 +11,7 @@ using FluxExtensions: pdf_normal, log_normal, pairwisel2, scaled_pairwisel2
 	@test all(abs.(pairwisel2(x,y) - o) .< 1e-5)
 	@test all(abs.(pairwisel2(x, y) - scaled_pairwisel2(x, y, fill(1,size(x)))) .< 1e-5)
 
-	oo = hcat([pairwise(SqMahalanobis(diagm(1./σ[:,i].^2)), x,y[:,i:i]) for i in 1:size(y,2)]...)
+	oo = hcat([pairwise(SqMahalanobis(Matrix(Diagonal(1 ./ σ[:,i].^2))), x,y[:,i:i]) for i in 1:size(y,2)]...)
 	@test all(abs.(scaled_pairwisel2(y, x ,σ)' .- oo) .< 1e-10)
 
 	@test all(abs.(Flux.data(scaled_pairwisel2(param(y), param(x), param(σ))) .- scaled_pairwisel2(y, x, σ)) .< 1e-10)

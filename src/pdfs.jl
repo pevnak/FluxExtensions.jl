@@ -5,7 +5,7 @@ using Flux.Tracker: TrackedArray, TrackedReal
 	pairwise distances between `x` and `y` using Euclidean Distance.
 	
 """
-pairwisel2(x,y) = -2 .* x' * y .+ sum(x.^2,1)' .+ sum(y.^2,1)
+pairwisel2(x,y) = -2 .* x' * y .+ sum(x.^2, dims = 1)' .+ sum(y.^2, dims = 1)
 
 
 """
@@ -25,7 +25,8 @@ scaled_pairwisel2(x, y, σ::T) where {T<:Union{AbstractVector, TrackedArray{T, N
 scaled_pairwisel2(x, y, σ::T) where {T<:Union{RowVector, TrackedArray{T, N, A} where {T, N, A<: RowVector}}} = pairwisel2(x, y) ./ (σ'.^2)
 
 function _scaled_pairwisel2(x, y, σ)
-	assert( (size(y, 1) == size(σ, 1) ) && (size(x, 2) == size(σ, 2)) && (size(x, 1) == size(y, 1)))
+	# @assert ((size(y, dims = 1) == size(σ, dims = 1) ) && (size(x, dims = 2) == size(σ, dims = 2)) && (size(x, dims = 1) == size(y, dims = 1)))
+	@assert ((size(y, 1) == size(σ, 1) ) && (size(x, 2) == size(σ, 2)) && (size(x, 1) == size(y, 1)))
 	o = zeros(size(x,2), size(y,2))
 	@inbounds for i in 1:size(y,2)
 		for j in 1:size(x,2)
@@ -38,7 +39,7 @@ function _scaled_pairwisel2(x, y, σ)
 end
 
 function _scaled_pairwisel2_back(Δ, x, y, σ)
-	assert( (size(y, 1) == size(σ, 1) ) && (size(x, 2) == size(σ, 2)) && (size(x, 1) == size(y, 1)))
+	@assert ((size(y, 1) == size(σ, 1) ) && (size(x, 2) == size(σ, 2)) && (size(x, 1) == size(y, 1)))
 	∇x = zero(x)
 	∇y = zero(y)
 	∇σ = zero(σ)

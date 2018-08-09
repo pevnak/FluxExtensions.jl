@@ -40,8 +40,8 @@ function layerbuilder(ks::Vector{Int},ftype::String,lastlayer::String = "",ltype
 	ls = Array{Any}(fill(eval(:($(Symbol(ltype)))),length(ks)-1))
 	fs = Array{Any}(fill(eval(:($(Symbol(ftype)))),length(ks)-1))
 	if !isempty(lastlayer)
-		fs[end] = (lastlayer == "linear")? identity : eval(:($(Symbol(lastlayer))))
-		ls[end] = (lastlayer == "linear")? Dense : ls[end]
+		fs[end] = (lastlayer == "linear") ? identity : eval(:($(Symbol(lastlayer))))
+		ls[end] = (lastlayer == "linear") ? Dense : ls[end]
 	end
 	layerbuilder(ks,ls,fs)
 end

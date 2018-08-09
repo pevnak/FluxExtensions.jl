@@ -1,6 +1,7 @@
-using Distributions, Base.Test, FluxExtensions, Distances
+using Distributions, Flux, Test, FluxExtensions, Distances
 using Flux: param
-using FluxExtensions: pdf_normal, log_normal, pairwisel2, scaled_pairwisel2
+using FluxExtensions: crosspdf_normal, crosslog_normal, pairwisel2, scaled_pairwisel2
+using LinearAlgebra
 
 @testset "testing pairwise function" begin 
 	x =  [-0.0953253   1.3719  -0.61826; -0.0734501  -1.4168   0.258718];
@@ -10,7 +11,7 @@ using FluxExtensions: pdf_normal, log_normal, pairwisel2, scaled_pairwisel2
 	@test all(abs.(pairwisel2(x,y) - o) .< 1e-5)
 	@test all(abs.(pairwisel2(x, y) - scaled_pairwisel2(x, y, fill(1,size(x)))) .< 1e-5)
 
-	oo = hcat([pairwise(SqMahalanobis(diagm(1./σ[:,i].^2)), x,y[:,i:i]) for i in 1:size(y,2)]...)
+	oo = hcat([pairwise(SqMahalanobis(Matrix(Diagonal(1 ./ σ[:,i].^2))), x,y[:,i:i]) for i in 1:size(y,2)]...)
 	@test all(abs.(scaled_pairwisel2(y, x ,σ)' .- oo) .< 1e-10)
 
 	@test all(abs.(Flux.data(scaled_pairwisel2(param(y), param(x), param(σ))) .- scaled_pairwisel2(y, x, σ)) .< 1e-10)
@@ -23,57 +24,57 @@ end
 	x = randn(2,3)
 	c = randn(2,4)
 	σ2 = 1.0
-	o = pdf_normal(x,c,σ2)
+	o = crosspdf_normal(x,c,σ2)
 	for i in 1:size(c,2)
 		@test all(abs.(pdf(MvNormal(c[:,i],fill(1,2)),x) .- o[i,:]) .< 1e-8)
 	end
 
 	σ2 = 0.5
-	o = pdf_normal(x,c,σ2)
+	o = crosspdf_normal(x,c,σ2)
 	for i in 1:size(c,2)
 		@test all(abs.(pdf(MvNormal(c[:,i],fill(σ2,2)),x) .- o[i,:]) .< 1e-8)
 	end
 
 	σ2 = 0.5
-	o = log_normal(x,c,σ2)
+	o = crosslog_normal(x,c,σ2)
 	for i in 1:size(c,2)
 		@test all(abs.(logpdf(MvNormal(c[:,i],fill(σ2,2)),x) .- o[i,:]) .< 1e-8)
 	end
-	@test Flux.Tracker.gradcheck((x,c) -> sum(pdf_normal(c, x, σ2)), x, c)
-	@test Flux.Tracker.gradcheck((x,c) -> sum(log_normal(c, x, σ2)), x, c)
+	@test Flux.Tracker.gradcheck((x,c) -> sum(crosspdf_normal(c, x, σ2)), x, c)
+	@test Flux.Tracker.gradcheck((x,c) -> sum(crosslog_normal(c, x, σ2)), x, c)
 end
 
 @testset "testing pdf of multivariate normal distribution with a vector σ" begin
 	x = randn(2,3)
 	c = randn(2,4)
 	σ2 = rand(2)
-	o = pdf_normal(x, c, σ2)
+	o = crosspdf_normal(x, c, σ2)
 	for i in 1:size(c,2)
 		@test all(abs.(pdf(MvNormal(c[:,i],σ2),x) .- o[i,:]) .< 1e-8)
 	end
-	o = log_normal(x, c, σ2)
+	o = crosslog_normal(x, c, σ2)
 	for i in 1:size(c,2)
 		@test all(abs.(logpdf(MvNormal(c[:,i],σ2),x) .- o[i,:]) .< 1e-8)
 	end
-	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(pdf_normal(c, x, σ)), x, c, σ2)
-	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(log_normal(c, x, σ)), x, c, σ2)
+	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(crosspdf_normal(c, x, σ)), x, c, σ2)
+	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(crosslog_normal(c, x, σ)), x, c, σ2)
 end
 
-@testset "testing pdf of multivariate normal distribution with a RowVector σ" begin
+@testset "testing pdf of multivariate normal distribution with a Transpose σ" begin
 	x = randn(2,3)
 	c = randn(2,4)
-	σ2 = RowVector(rand(4))
-	o = pdf_normal(x, c, σ2)
+	σ2 = rand(1,4)
+	o = crosspdf_normal(x, c, σ2)
 	for i in 1:size(c,2)
 		@test all(abs.(pdf(MvNormal(c[:,i],σ2[i]),x) .- o[i,:]) .< 1e-8)
 	end
 
-	o = log_normal(x, c, σ2)
+	o = crosslog_normal(x, c, σ2)
 	for i in 1:size(c,2)
 		@test all(abs.(logpdf(MvNormal(c[:,i],σ2[i]),x) .- o[i,:]) .< 1e-8)
 	end
-	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(pdf_normal(c, x, σ)), c, x, σ2)
-	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(log_normal(c, x, σ)), c, x, σ2)
+	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(crosspdf_normal(c, x, σ)), c, x, σ2)
+	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(crosslog_normal(c, x, σ)), c, x, σ2)
 end
 
 
@@ -81,15 +82,15 @@ end
 	x = randn(2,3)
 	c = randn(2,4)
 	σ2 = rand!(similar(c))
-	o = pdf_normal(x, c, σ2)
+	o = crosspdf_normal(x, c, σ2)
 	for i in 1:size(c,2)
 		@test all(abs.(pdf(MvNormal(c[:,i],σ2[:,i]),x) .- o[i,:]) .< 1e-8)
 	end
-	o = log_normal(x, c, σ2)
+	o = crosslog_normal(x, c, σ2)
 	for i in 1:size(c,2)
 		@test all(abs.(logpdf(MvNormal(c[:,i],σ2[:,i]),x) .- o[i,:]) .< 1e-8)
 	end
-	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(pdf_normal(x, c, σ)), x, c, σ2)
-	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(log_normal(x, c, σ)), x, c, σ2)
+	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(crosspdf_normal(x, c, σ)), x, c, σ2)
+	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(crosslog_normal(x, c, σ)), x, c, σ2)
 end
 

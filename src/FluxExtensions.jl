@@ -2,6 +2,7 @@ module FluxExtensions
 using Adapt
 using Flux
 import Adapt: adapt
+using LinearAlgebra
 
 include("layers/resdense.jl")
 include("layers/layerbuilder.jl")

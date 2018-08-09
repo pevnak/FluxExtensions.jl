@@ -5,7 +5,7 @@ using Flux.Tracker: TrackedArray, TrackedReal
 	pairwise distances between `x` and `y` using Euclidean Distance.
 	
 """
-pairwisel2(x,y) = -2 .* x' * y .+ sum(x.^2,1)' .+ sum(y.^2,1)
+pairwisel2(x,y) = -2 .* x' * y .+ sum(x.^2, dims = 1)' .+ sum(y.^2, dims = 1)
 
 
 """
@@ -15,17 +15,18 @@ pairwisel2(x,y) = -2 .* x' * y .+ sum(x.^2,1)' .+ sum(y.^2,1)
 	if σ is:
 		- Number means a σ shared by all `x`
 		- Vector means a σ is diagonal shared by all `x`
-		- RowVector means each column of `x` has its own scalar σ
+		- Transpose means each column of `x` has its own scalar σ
 		- Matrix means each column of `x` has its own scalar diagonal σ
-
 
 """
 scaled_pairwisel2(x, y, σ::T) where {T<: Union{Real,TrackedReal}} = pairwisel2(x, y) ./ σ^2
 scaled_pairwisel2(x, y, σ::T) where {T<:Union{AbstractVector, TrackedArray{T, N, A} where {T, N, A<: AbstractVector}}} = pairwisel2(x ./σ, y./σ)
-scaled_pairwisel2(x, y, σ::T) where {T<:Union{RowVector, TrackedArray{T, N, A} where {T, N, A<: RowVector}}} = pairwisel2(x, y) ./ (σ'.^2)
+# scaled_pairwisel2(x, y, σ::T) where {T<:Union{Transpose, TrackedArray{T, N, A} where {T, N, A<: Transpose}}} = pairwisel2(x, y) ./ (σ'.^2)
+scaled_pairwisel2(x::Matrix, y::Matrix, σ::Matrix) = (size(σ,1) > 1) ? _scaled_pairwisel2(x, y, σ) : pairwisel2(x, y) ./ (σ'.^2)
 
 function _scaled_pairwisel2(x, y, σ)
-	assert( (size(y, 1) == size(σ, 1) ) && (size(x, 2) == size(σ, 2)) && (size(x, 1) == size(y, 1)))
+	# @assert ((size(y, dims = 1) == size(σ, dims = 1) ) && (size(x, dims = 2) == size(σ, dims = 2)) && (size(x, dims = 1) == size(y, dims = 1)))
+	@assert ((size(y, 1) == size(σ, 1) ) && (size(x, 2) == size(σ, 2)) && (size(x, 1) == size(y, 1)))
 	o = zeros(size(x,2), size(y,2))
 	@inbounds for i in 1:size(y,2)
 		for j in 1:size(x,2)
@@ -37,8 +38,8 @@ function _scaled_pairwisel2(x, y, σ)
 	o
 end
 
-function _scaled_pairwisel2_back(Δ, x, y, σ)
-	assert( (size(y, 1) == size(σ, 1) ) && (size(x, 2) == size(σ, 2)) && (size(x, 1) == size(y, 1)))
+function _scaled_pairwisel2_m_back(Δ, x, y, σ)
+	@assert ((size(y, 1) == size(σ, 1) ) && (size(x, 2) == size(σ, 2)) && (size(x, 1) == size(y, 1)))
 	∇x = zero(x)
 	∇y = zero(y)
 	∇σ = zero(σ)
@@ -55,14 +56,13 @@ function _scaled_pairwisel2_back(Δ, x, y, σ)
 	(∇x, ∇y, ∇σ)
 end
 
-scaled_pairwisel2(x::Matrix, y::Matrix, σ::Matrix) = _scaled_pairwisel2(x, y, σ)
-scaled_pairwisel2(x, y, σ::S) where {S<:Union{Matrix, TrackedArray{T, N, A} where {T, N, A<: Matrix}}} = Flux.Tracker.track(scaled_pairwisel2, x, y, σ)
+scaled_pairwisel2(x, y, σ::S) where {S<:Union{Matrix, TrackedArray{T, N, A} where {T, N, A<: Matrix}}} = (size(σ,1) == 1 ) ? pairwisel2(x, y) ./ (σ'.^2) : Flux.Tracker.track(scaled_pairwisel2, x, y, σ)
 Flux.Tracker.@grad function scaled_pairwisel2(x, y, σ)
-  return(_scaled_pairwisel2(Flux.data(x), Flux.data(y), Flux.data(σ)), Δ -> _scaled_pairwisel2_back(Flux.data(Δ), Flux.data(x), Flux.data(y), Flux.data(σ)))
+  return(_scaled_pairwisel2(Flux.data(x), Flux.data(y), Flux.data(σ)), Δ -> _scaled_pairwisel2_m_back(Flux.data(Δ), Flux.data(x), Flux.data(y), Flux.data(σ)))
 end
 
 """
-	pdf_normal(x,c,σ2::T)
+	crosspdf_normal(x,c,σ2::T)
 
 	probability density of Normal Distribution of samples in `x` (each column is 
 	one sample) with respect to a series of Normal Distributions defined 
@@ -71,23 +71,20 @@ end
 
 		- Number means a σ shared by all centers
 		- Vector means a σ is diagonal shared by all centers
-		- RowVector means each center has its own scalar σ
+		- Transpose means each center has its own scalar σ
 		- Matrix means each center has its own scalar diagonal σ
-		
 
 	This should be compatible with Flux
 """
-pdf_normal(x, c, σ ::T) where {T<:Real} = exp.(- 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π*σ^2)/2)
-pdf_normal(x, c, σ ::T) where {T<:Union{RowVector, TrackedArray{T, N, A} where {T, N, A<: RowVector}}} = exp.(- 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- size(x,1)*log.(σ'))
-pdf_normal(x, c, σ ::T) where {T<:AbstractVector} = exp.(- 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- sum(log.(σ)))
-pdf_normal(x, c, σ ::T) where {T<:AbstractMatrix} = exp.(- 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- sum(log.(σ), 1)')
+crosspdf_normal(x, c, σ) = exp.(crosslog_normal(x, c, σ))
 
-log_normal(x, c, σ ::T) where {T<:Real} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π*σ^2)/2
-log_normal(x, c, σ ::T) where {T<:Union{RowVector, TrackedArray{T, N, A} where {T, N, A<: RowVector}}} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- size(x,1)*log.(σ')
-log_normal(x, c, σ ::T) where {T<:AbstractVector} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- sum(log.(σ))
-log_normal(x, c, σ ::T) where {T<:AbstractMatrix} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- sum(log.(σ), 1)'
-log_normal(x) = - sum((@. x^2), 1)/2 - size(x,1)*log(2π)/2
-log_normal(x,μ) = - sum((@. (x - μ)^2), 1) / 2 - size(x,1)*log(2π)/2
+crosslog_normal(x, c, σ ::T) where {T<:Real} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π*σ^2)/2
+crosslog_normal(x, c, σ ::T) where {T<:Union{Transpose, TrackedArray{T, N, A} where {T, N, A<: Transpose}}} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- size(x,1)*log.(σ')
+crosslog_normal(x, c, σ ::T) where {T<:AbstractVector} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- sum(log.(σ))
+function crosslog_normal(x, c, σ ::T) where {T<:AbstractMatrix}
+	n = (size(σ,1) == 1) ? size(x,1) : 1
+	- 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- n.*sum(log.(σ), dims = 1)'
+end
 
 """
 		kldiv(μ,σ2)
@@ -101,8 +98,9 @@ kldiv(μ,σ2) = - mean(sum((@.log(σ2) - μ^2 - σ2), 1))
 		log_normal(x,μ,σ2 = I)
 
 		log-likelihood of x to the Normal with centre at mu
-
 """
+log_normal(x) = - sum((@. x^2), 1)/2 - size(x,1)*log(2π)/2
+log_normal(x,μ) = - sum((@. (x - μ)^2), 1) / 2 - size(x,1)*log(2π)/2
 
 log_bernoulli(x::AbstractMatrix,θ::AbstractVector) = log.(θ)' * x
 log_bernoulli(x::AbstractMatrix,θ::AbstractMatrix) = sum(x .* log.(θ),1)

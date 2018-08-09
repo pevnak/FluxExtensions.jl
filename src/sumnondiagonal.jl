@@ -1,5 +1,5 @@
 function sumnondiagonal(x::Matrix{T}) where {T}
-  assert(size(x,1) == size(x,2))
+  @assert size(x,1) == size(x,2)
   s = zero(T)
   @inbounds for j in 1:size(x,2)
     for i in 1:size(x,1)
@@ -10,8 +10,8 @@ function sumnondiagonal(x::Matrix{T}) where {T}
 end
 
 function backsumnondiagonal(x::AbstractMatrix,Δ::T) where {T}
-  assert(size(x,1) == size(x,2))
-  s = zeros(T,size(x))
+  @assert size(x,1) == size(x,2)
+  s = zero(x)
   @inbounds for j in 1:size(x,2)
     for i in 1:size(x,1)
       s[i,j] = (i == j) ? zero(T) : Δ

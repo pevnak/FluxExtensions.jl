@@ -7,14 +7,14 @@ using LinearAlgebra
 include("layers/resdense.jl")
 include("layers/layerbuilder.jl")
 include("utils.jl")
-# include("plot.jl")
+include("plot.jl")
 include("sparse.jl")
 include("pdfs.jl")
 include("sumnondiagonal.jl")
 include("scatter.jl")
 include("lbfgs.jl")
 include("search/evaluation.jl")
-# include("triangularloss.jl")
+include("triangularloss.jl")
 
 freeze(m) = Flux.mapleaves(Flux.Tracker.data,m)
 

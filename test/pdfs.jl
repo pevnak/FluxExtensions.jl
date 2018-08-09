@@ -1,4 +1,4 @@
-using Distributions, Test, FluxExtensions, Distances
+using Distributions, Flux, Test, FluxExtensions, Distances
 using Flux: param
 using FluxExtensions: pdf_normal, log_normal, pairwisel2, scaled_pairwisel2
 using LinearAlgebra
@@ -63,7 +63,7 @@ end
 @testset "testing pdf of multivariate normal distribution with a Transpose σ" begin
 	x = randn(2,3)
 	c = randn(2,4)
-	σ2 = Transpose(rand(4))
+	σ2 = rand(1,4)
 	o = pdf_normal(x, c, σ2)
 	for i in 1:size(c,2)
 		@test all(abs.(pdf(MvNormal(c[:,i],σ2[i]),x) .- o[i,:]) .< 1e-8)

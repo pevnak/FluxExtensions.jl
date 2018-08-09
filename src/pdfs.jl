@@ -62,7 +62,7 @@ Flux.Tracker.@grad function scaled_pairwisel2(x, y, σ)
 end
 
 """
-	pdf_normal(x,c,σ2::T)
+	crosspdf_normal(x,c,σ2::T)
 
 	probability density of Normal Distribution of samples in `x` (each column is 
 	one sample) with respect to a series of Normal Distributions defined 
@@ -76,14 +76,12 @@ end
 
 	This should be compatible with Flux
 """
-pdf_normal(x, c, σ) = exp.(log_normal(x, c, σ))
+crosspdf_normal(x, c, σ) = exp.(crosslog_normal(x, c, σ))
 
-log_normal(x, c, σ ::T) where {T<:Real} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π*σ^2)/2
-log_normal(x, c, σ ::T) where {T<:Union{Transpose, TrackedArray{T, N, A} where {T, N, A<: Transpose}}} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- size(x,1)*log.(σ')
-log_normal(x, c, σ ::T) where {T<:AbstractVector} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- sum(log.(σ))
-log_normal(x) = - sum((@. x^2), 1)/2 - size(x,1)*log(2π)/2
-log_normal(x,μ) = - sum((@. (x - μ)^2), 1) / 2 - size(x,1)*log(2π)/2
-function log_normal(x, c, σ ::T) where {T<:AbstractMatrix}
+crosslog_normal(x, c, σ ::T) where {T<:Real} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π*σ^2)/2
+crosslog_normal(x, c, σ ::T) where {T<:Union{Transpose, TrackedArray{T, N, A} where {T, N, A<: Transpose}}} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- size(x,1)*log.(σ')
+crosslog_normal(x, c, σ ::T) where {T<:AbstractVector} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- sum(log.(σ))
+function crosslog_normal(x, c, σ ::T) where {T<:AbstractMatrix}
 	n = (size(σ,1) == 1) ? size(x,1) : 1
 	- 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- n.*sum(log.(σ), dims = 1)'
 end
@@ -101,6 +99,8 @@ kldiv(μ,σ2) = - mean(sum((@.log(σ2) - μ^2 - σ2), 1))
 
 		log-likelihood of x to the Normal with centre at mu
 """
+log_normal(x) = - sum((@. x^2), 1)/2 - size(x,1)*log(2π)/2
+log_normal(x,μ) = - sum((@. (x - μ)^2), 1) / 2 - size(x,1)*log(2π)/2
 
 log_bernoulli(x::AbstractMatrix,θ::AbstractVector) = log.(θ)' * x
 log_bernoulli(x::AbstractMatrix,θ::AbstractMatrix) = sum(x .* log.(θ),1)

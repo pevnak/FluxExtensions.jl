@@ -67,7 +67,7 @@ end
 """
 function gather(x,k::Int) 
   d, l = size(x,1), div(size(x,2),k)
-  reshape(sum(reshape(x,d,k,l), dims = 2),d,l)
+  reshape(sum(reshape(x,d,k,l), 2),d,l)
 end
 
 function gather(x,k::Vector{Int})

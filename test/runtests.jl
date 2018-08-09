@@ -1,4 +1,4 @@
-using Test
+using Base.Test
 using Flux, NNlib, FluxExtensions
 using Flux.Tracker, NNlib
 using Flux.Tracker: TrackedReal, gradcheck

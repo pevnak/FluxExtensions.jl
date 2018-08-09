@@ -5,7 +5,7 @@ using Flux.Tracker: TrackedArray, TrackedReal
 	pairwise distances between `x` and `y` using Euclidean Distance.
 	
 """
-pairwisel2(x,y) = -2 .* x' * y .+ sum(x.^2, dims = 1)' .+ sum(y.^2, dims = 1)
+pairwisel2(x,y) = -2 .* x' * y .+ sum(x.^2, 1)' .+ sum(y.^2, 1)
 
 
 """
@@ -25,7 +25,7 @@ scaled_pairwisel2(x, y, σ::T) where {T<:Union{AbstractVector, TrackedArray{T, N
 scaled_pairwisel2(x::Matrix, y::Matrix, σ::Matrix) = (size(σ,1) > 1) ? _scaled_pairwisel2(x, y, σ) : pairwisel2(x, y) ./ (σ'.^2)
 
 function _scaled_pairwisel2(x, y, σ)
-	# @assert ((size(y, dims = 1) == size(σ, dims = 1) ) && (size(x, dims = 2) == size(σ, dims = 2)) && (size(x, dims = 1) == size(y, dims = 1)))
+	# @assert ((size(y, 1) == size(σ, 1) ) && (size(x, dims = 2) == size(σ, dims = 2)) && (size(x, 1) == size(y, 1)))
 	@assert ((size(y, 1) == size(σ, 1) ) && (size(x, 2) == size(σ, 2)) && (size(x, 1) == size(y, 1)))
 	o = zeros(size(x,2), size(y,2))
 	@inbounds for i in 1:size(y,2)
@@ -79,12 +79,9 @@ end
 crosspdf_normal(x, c, σ) = exp.(crosslog_normal(x, c, σ))
 
 crosslog_normal(x, c, σ ::T) where {T<:Real} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π*σ^2)/2
-crosslog_normal(x, c, σ ::T) where {T<:Union{Transpose, TrackedArray{T, N, A} where {T, N, A<: Transpose}}} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- size(x,1)*log.(σ')
+# crosslog_normal(x, c, σ ::T) where {T<:Union{Transpose, TrackedArray{T, N, A} where {T, N, A<: Transpose}}} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- size(x,1)*log.(σ')
 crosslog_normal(x, c, σ ::T) where {T<:AbstractVector} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- sum(log.(σ))
-function crosslog_normal(x, c, σ ::T) where {T<:AbstractMatrix}
-	n = (size(σ,1) == 1) ? size(x,1) : 1
-	- 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- n.*sum(log.(σ), dims = 1)'
-end
+crosslog_normal(x, c, σ ::T) where {T<:AbstractMatrix} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- (1+ size(x,1) - size(σ,1)).*sum(log.(σ), 1)'
 
 """
 		kldiv(μ,σ2)
@@ -100,7 +97,8 @@ kldiv(μ,σ2) = - mean(sum((@.log(σ2) - μ^2 - σ2), 1))
 		log-likelihood of x to the Normal with centre at mu
 """
 log_normal(x) = - sum((@. x^2), 1)/2 - size(x,1)*log(2π)/2
-log_normal(x,μ) = - sum((@. (x - μ)^2), 1) / 2 - size(x,1)*log(2π)/2
+log_normal(x,μ) = log_normal(x - μ)
+log_normal(x,μ, σ2::T) where {T<:Number} = - sum((@. ((x - μ)^2)/σ2), 1)/2 - size(x,1)*log(σ2*2π)/2
 
 log_bernoulli(x::AbstractMatrix,θ::AbstractVector) = log.(θ)' * x
 log_bernoulli(x::AbstractMatrix,θ::AbstractMatrix) = sum(x .* log.(θ),1)

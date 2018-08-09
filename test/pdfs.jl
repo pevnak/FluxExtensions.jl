@@ -1,7 +1,7 @@
-using Distributions, Flux, Test, FluxExtensions, Distances
+using Distributions, Flux, Base.Test, FluxExtensions, Distances
 using Flux: param
-using FluxExtensions: crosspdf_normal, crosslog_normal, pairwisel2, scaled_pairwisel2
-using LinearAlgebra
+using FluxExtensions: crosspdf_normal, crosslog_normal, pairwisel2, scaled_pairwisel2, log_normal
+# using LinearAlgebra
 
 @testset "testing pairwise function" begin 
 	x =  [-0.0953253   1.3719  -0.61826; -0.0734501  -1.4168   0.258718];
@@ -20,7 +20,7 @@ using LinearAlgebra
 	@test Flux.Tracker.gradcheck(σ -> sum(scaled_pairwisel2(y, x, σ)), σ)
 end
 
-@testset "testing pdf of a multivariate normal distribution with a scalar σ" begin
+@testset "testing crosspdf of a multivariate normal distribution with a scalar σ" begin
 	x = randn(2,3)
 	c = randn(2,4)
 	σ2 = 1.0
@@ -44,7 +44,7 @@ end
 	@test Flux.Tracker.gradcheck((x,c) -> sum(crosslog_normal(c, x, σ2)), x, c)
 end
 
-@testset "testing pdf of multivariate normal distribution with a vector σ" begin
+@testset "testing crosspdf of multivariate normal distribution with a vector σ" begin
 	x = randn(2,3)
 	c = randn(2,4)
 	σ2 = rand(2)
@@ -60,7 +60,7 @@ end
 	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(crosslog_normal(c, x, σ)), x, c, σ2)
 end
 
-@testset "testing pdf of multivariate normal distribution with a Transpose σ" begin
+@testset "testing crosspdf of multivariate normal distribution with a Transpose σ" begin
 	x = randn(2,3)
 	c = randn(2,4)
 	σ2 = rand(1,4)
@@ -78,7 +78,7 @@ end
 end
 
 
-@testset "testing pdf of multivariate normal distribution with a matrix σ" begin
+@testset "testing crosspdf of multivariate normal distribution with a matrix σ" begin
 	x = randn(2,3)
 	c = randn(2,4)
 	σ2 = rand!(similar(c))
@@ -92,5 +92,14 @@ end
 	end
 	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(crosspdf_normal(x, c, σ)), x, c, σ2)
 	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(crosslog_normal(x, c, σ)), x, c, σ2)
+end
+
+@testset "testing logpdf of multivariate normal distribution" begin
+	x = randn(2,3)
+	c = randn(2,3)
+	@test all(abs.(logpdf(MvNormal(diagm(ones(2))),x) - log_normal(x)') .< 1e-10)
+	@test all(abs.(logpdf(MvNormal(diagm(ones(2))),x - c) - log_normal(x, c)') .< 1e-10)
+	σ = rand()	
+	@test all(abs.(logpdf(MvNormal(diagm(σ*ones(2))),x - c) - log_normal(x, c, σ)') .< 1e-10)
 end
 

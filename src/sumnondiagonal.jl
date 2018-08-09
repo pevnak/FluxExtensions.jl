@@ -22,5 +22,5 @@ end
 
 sumnondiagonal(x::Flux.Tracker.TrackedMatrix) = Flux.Tracker.track(sumnondiagonal,x)
 Flux.Tracker.@grad function sumnondiagonal(x)
-  return(sumnondiagonal(Flux.data(x)), Δ -> (backsumnondiagonal(x , Δ),))
+  return(sumnondiagonal(Flux.data(x)), Δ -> (backsumnondiagonal(Flux.data(x) , Δ),))
 end

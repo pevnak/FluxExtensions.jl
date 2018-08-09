@@ -4,10 +4,10 @@ using Flux.Tracker, Base.Test, NNlib
 using Flux.Tracker: TrackedReal, gradcheck
 
 
-# include("utils.jl")
+include("utils.jl")
 include("layers/resdense.jl")
 include("pdfs.jl")
-# include("triangularloss.jl")
+include("triangularloss.jl")
 
 
 @testset "sumnondiagonal" begin

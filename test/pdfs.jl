@@ -1,7 +1,6 @@
-using Distributions, Flux, Test, Distances
+using Distributions, Flux, Test, Distances, LinearAlgebra, Random
 using Flux: param
 using FluxExtensions: crosspdf_normal, crosslog_normal, pairwisel2, scaled_pairwisel2
-using LinearAlgebra
 
 @testset "testing pairwise function" begin
 	x =  [-0.0953253   1.3719  -0.61826; -0.0734501  -1.4168   0.258718];

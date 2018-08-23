@@ -2,6 +2,8 @@ using Test
 using Flux, NNlib
 using Flux.Tracker, NNlib
 using Flux.Tracker: TrackedReal, gradcheck
+using FluxExtensions
+
 
 include("utils.jl")
 include("layers/resdense.jl")

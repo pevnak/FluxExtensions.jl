@@ -7,7 +7,7 @@ import Adapt: adapt
 include("layers/resdense.jl")
 include("layers/layerbuilder.jl")
 include("utils.jl")
-include("plot.jl")
+# include("plot.jl")
 include("sparse.jl")
 include("pdfs.jl")
 include("sumnondiagonal.jl")

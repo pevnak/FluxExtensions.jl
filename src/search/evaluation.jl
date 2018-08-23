@@ -6,11 +6,11 @@ function crossvalidate(data,target,createmodel,loss,bs=100,n=10000)
 	function onerun(xTrn,xVal)
 		m = createmodel()
 		opt = Flux.Optimise.ADAM(params(m))
-		Flux.train!((xx...) -> loss(m(getobs(xx[1])),getobs(xx[2])),opt,RandomBatches(xTrn,bs,n))
+		Flux.train!((xx...) -> loss(m(getobs(xx[1])),getobs(xx[2])), RandomBatches(xTrn,bs,n), opt)
 		(mean(Flux.argmax(m(getobs(xTrn[1]))) .!= Flux.argmax(getobs(xTrn[2]))),
 		mean(Flux.argmax(m(getobs(xVal[1]))) .!= Flux.argmax(getobs(xVal[2]))))
 	end
-	map(x -> onerun(x[1],x[2]),kfolds(shuffleobs((data,target)),5))
+	map(x -> onerun(x[1],x[2]), kfolds(shuffleobs((data,target)),5))
 end
 
 function gridsearch(cr,parameters)

@@ -1,13 +1,13 @@
-using Distributions, Flux, Test, FluxExtensions, Distances
+using Distributions, Flux, Test, Distances
 using Flux: param
 using FluxExtensions: crosspdf_normal, crosslog_normal, pairwisel2, scaled_pairwisel2
 using LinearAlgebra
 
-@testset "testing pairwise function" begin 
+@testset "testing pairwise function" begin
 	x =  [-0.0953253   1.3719  -0.61826; -0.0734501  -1.4168   0.258718];
 	y =  [0.515695   1.6764    0.64819   -0.348698;	 0.781103  -0.339036  0.899459  -0.718019];
 	o =  [1.10361  3.20955  1.49937  0.479667;  5.56386  1.2543   5.88881  3.44875;  1.55874  5.62277  2.01444  1.02668;]
-	σ =  [ 0.148651  0.982446  0.903678  0.421709;  0.3799    0.192967  0.884023  0.841242]	
+	σ =  [ 0.148651  0.982446  0.903678  0.421709;  0.3799    0.192967  0.884023  0.841242]
 	@test all(abs.(pairwisel2(x,y) - o) .< 1e-5)
 	@test all(abs.(pairwisel2(x, y) - scaled_pairwisel2(x, y, fill(1,size(x)))) .< 1e-5)
 
@@ -93,4 +93,3 @@ end
 	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(crosspdf_normal(x, c, σ)), x, c, σ2)
 	@test Flux.Tracker.gradcheck((x,c,σ) -> sum(crosslog_normal(x, c, σ)), x, c, σ2)
 end
-

@@ -28,7 +28,7 @@ function classweightvector(y::AbstractArray{T},classweights::Vector{S}) where {T
     w[j] = classweights[y[j]]/classsizes[y[j]]
   end
   if sum(isnan.(w))>0 || sum(isinf.(w))>0
-    save("error.jld","y",y,"classweights",classweights)
+    save("error.jld2","y",y,"classweights",classweights)
     error("nans or infs in classweights")
   end
   w

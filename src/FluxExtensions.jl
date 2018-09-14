@@ -1,3 +1,4 @@
+__precompile__(false)
 module FluxExtensions
 using Adapt
 using Flux
@@ -7,7 +8,6 @@ using LinearAlgebra
 include("layers/resdense.jl")
 include("layers/layerbuilder.jl")
 include("utils.jl")
-# include("plot.jl")
 include("sparse.jl")
 include("pdfs.jl")
 include("sumnondiagonal.jl")

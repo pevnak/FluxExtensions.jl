@@ -89,8 +89,8 @@ function gather(f::Function, x, k::Int)
 end
 
 function logsumexp(x,k::Int)
-  xm = maximum(x,k)
-  xm .+ log.( sum( exp.(x .- xm),k))
+  xm = maximum(x,dims = k)
+  xm .+ log.( sum( exp.(x .- xm),dims = k))
 end
 
 function logsumexp(x)

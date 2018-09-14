@@ -1,4 +1,5 @@
 import Flux.Tracker.back
+using SparseArrays
 import Base.*
 
 function multrans(A::Matrix, B::SparseMatrixCSC)

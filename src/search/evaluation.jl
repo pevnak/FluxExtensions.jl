@@ -1,6 +1,5 @@
 using MLDataPattern
 using DataFrames
-using CSV
 
 function crossvalidate(data,target,createmodel,loss,bs=100,n=10000)
 	function onerun(xTrn,xVal)

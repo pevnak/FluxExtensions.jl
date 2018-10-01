@@ -1,4 +1,3 @@
-__precompile__(false)
 module FluxExtensions
 using Adapt
 using Flux

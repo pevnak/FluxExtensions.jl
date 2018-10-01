@@ -9,6 +9,7 @@ include("utils.jl")
 include("layers/resdense.jl")
 include("pdfs.jl")
 include("triangularloss.jl")
+include("sparse.jl")
 
 @testset "sumnondiagonal" begin
 	x = randn(4,4)

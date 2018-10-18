@@ -14,6 +14,7 @@ include("scatter.jl")
 include("lbfgs.jl")
 include("search/evaluation.jl")
 include("triangularloss.jl")
+include("ngrams.jl")
 
 freeze(m) = Flux.mapleaves(Flux.Tracker.data,m)
 

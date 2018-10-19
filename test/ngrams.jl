@@ -1,5 +1,6 @@
 using Test
 using FluxExtensions: NGramIterator, ngrams, string2ngrams, countngrams, mul, multrans, NGramStrings
+using BenchmarkTools, SparseArrays, Random
 @testset "ngrams" begin
 	x = [1,3,5,2,6,8,3]
 	b = 8 + 1
@@ -40,8 +41,26 @@ using FluxExtensions: NGramIterator, ngrams, string2ngrams, countngrams, mul, mu
 		A = randn(4, 10)
 		s = ["hello", "world", "!!!"]
 		B = NGramStrings(s, 3, 256)
-		@test all(mul(A , B) .≈ A*string2ngrams(s, 3, size(A, 2)))
+		@test all(A * B .≈ A*string2ngrams(s, 3, size(A, 2)))
 		A = randn(5,3)
 		@test all(multrans(A , B) .≈ A*transpose(string2ngrams(s, 3, size(A, 2))))
 	end
+
 end
+begin
+	#begin block body
+	A = randn(80,2053);
+	s = [randstring(10) for i in 1:1000];
+	B = NGramStrings(s, 3, 256)
+	C = sparse(string2ngrams(s, 3, size(A, 2)));
+	println("A * B::NGramStrings"); 
+	@btime A*B;																	# 526.456 μs (2002 allocations: 671.95 KiB)
+	println("A * string2ngrams(s, 3, size(A, 2))")
+	@btime A*string2ngrams(s, 3, size(A, 2)); 					# 154.646 ms (3013 allocations: 16.38 MiB)
+	println("A * sparse(string2ngrams(s, 3, size(A, 2)))")
+	@btime A*sparse(string2ngrams(s, 3, size(A, 2))); 	# 7.525 ms (3013 allocations: 16.57 MiB)
+	print("A * C where C = sparse(string2ngrams(s, 3, size(A, 2)));"); 
+	@btime A*C; 																				# 1.527 ms (2 allocations: 625.08 KiB)
+end
+
+nothing

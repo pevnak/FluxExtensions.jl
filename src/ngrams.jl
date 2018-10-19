@@ -126,8 +126,8 @@ function multrans(A::Matrix, B::NGramStrings{T}) where {T<:AbstractString}
   return C
 end
 
-a::Flux.Tracker.TrackedMatrix * b::NGramIterator{S} where {S<:AbstractString} = Flux.Tracker.track(mul, a, b)
-a::Matrix * b::NGramIterator{S} where {S<:AbstractString} = mul(a, b)
+a::Flux.Tracker.TrackedMatrix * b::NGramStrings{S} where {S<:AbstractString} = Flux.Tracker.track(mul, a, b)
+a::Matrix * b::NGramStrings{S} where {S<:AbstractString} = mul(a, b)
 Flux.Tracker.@grad function mul(a::AbstractMatrix, b::NGramStrings{S}) where {S<:AbstractString}
   return mul(Flux.data(a),b) , Δ -> (multrans(Δ, b),nothing)
 end

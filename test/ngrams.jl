@@ -1,6 +1,5 @@
-using FluxExtensions: NGramIterator, ngrams, string2ngrams
-
-using FluxExtensions: ngrams, countngrams, string2ngrams
+using Test
+using FluxExtensions: NGramIterator, ngrams, string2ngrams, countngrams, mul, multrans, NGramStrings
 @testset "ngrams" begin
 	x = [1,3,5,2,6,8,3]
 	b = 8 + 1
@@ -27,7 +26,7 @@ using FluxExtensions: ngrams, countngrams, string2ngrams
 			end
 
 			s = split("Lorem ipsum dolor sit amet, consectetur adipiscing elit")
-			@test all(countngrams(s,3,256,10) .== hcat(map(t->idx2vec(ngrams(t,3,256), 10),s)...))
+			@test all(countngrams(s,3,256,10) .== hcat(map(ss -> idx2vec(ngrams(ss,3,256), 10),s)...))
 	end
 
 
@@ -39,8 +38,10 @@ using FluxExtensions: ngrams, countngrams, string2ngrams
 		all(collect(NGramIterator(codeunits("hello"), 3, 257)) .== ngrams("hello", 3, 257))
 
 		A = randn(4, 10)
-		@test all(mul(A , ["hello","hello"]) .≈ A*string2ngrams(["hello","hello"], 3, size(A, 2)))
-		A = randn(5,2)
-		@test all(multrans(A , ["hello","hello"]) .≈ A*transpose(string2ngrams(["hello","hello"], 3, size(A, 2))))
+		s = ["hello", "world", "!!!"]
+		B = NGramStrings(s, 3, 256)
+		@test all(mul(A , B) .≈ A*string2ngrams(s, 3, size(A, 2)))
+		A = randn(5,3)
+		@test all(multrans(A , B) .≈ A*transpose(string2ngrams(s, 3, size(A, 2))))
 	end
 end

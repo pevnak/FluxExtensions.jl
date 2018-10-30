@@ -1,6 +1,6 @@
 using Optim
 
-function copyvalues!(dst, θ)
+function vector2values!(dst, θ)
     offset = 1
     for m in dst 
         copy!(m.data, θ[offset:offset+length(m)-1])
@@ -10,7 +10,7 @@ end
 
 zerograds!(dst) = foreach(m -> fill!(m.grad,0),dst)
 
-function copygrads!(w, src)
+function grad2vector!(w, src)
     offset = 1
     for m in src 
         copy!(view(w,offset:offset+length(m)-1), m.grad)
@@ -25,16 +25,16 @@ function lbfgs(optfun, m, x; testgradient::Bool = false, options = Optim.Options
                              store_trace = false,
                              show_trace = true))
     function f(θ, m, ps, x)
-        copyvalues!(ps, θ)
+        vector2values!(ps, θ)
         optfun(m,x)
     end
 
     function g!(w, θ, m, ps, x)
-        copyvalues!(ps, θ)
+        vector2values!(ps, θ)
         zerograds!(ps)
         fVal = optfun(m, x);
         Flux.back!(fVal)
-        copygrads!(w, ps)
+        grad2vector!(w, ps)
         Flux.data(fVal)
     end
 

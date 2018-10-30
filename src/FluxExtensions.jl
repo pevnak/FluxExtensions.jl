@@ -1,6 +1,5 @@
 module FluxExtensions
-using Adapt
-using Flux
+using Adapt, Flux, Statistics
 import Adapt: adapt
 using LinearAlgebra
 
@@ -14,7 +13,7 @@ include("scatter.jl")
 include("lbfgs.jl")
 include("search/evaluation.jl")
 include("triangularloss.jl")
-include("ngrams.jl")
+include("learn.jl")
 
 freeze(m) = Flux.mapleaves(Flux.Tracker.data,m)
 

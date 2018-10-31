@@ -71,6 +71,7 @@ function learn(model, loss, opt, data_provider, max_steps; cb = default_cb, brea
 	  step+=1
 	  if mod(step,breaks) == 0
 	  	cb(step, load_time, calculation_time, training_loss / breaks)
+	  	serializestate("state.ser", model, loss, data)
 	    training_loss = 0.0
 	  end
 	end
@@ -108,7 +109,7 @@ function ∇loss!(loss, models::NTuple{N, A}, datas::NTuple{N, B}, mparams, file
 	fVals = fill(0.0, n)
 	Threads.@threads for i in 1:n
 		i != 1 && copyvalues!(mparams[i], mparams[1])
-		zerograds!(params(mparams[i]))
+		zerograds!(mparams[i])
 		fVals[i] = ∇loss!(loss, models[i], datas[i], filename)
 	end
 	for i in 2:n

@@ -19,4 +19,4 @@ function Base.show(io::IO, l::ResDense)
 end
 
 Flux.@treelike(ResDense)
-adapt(T, m::ResDense) = ResDense(adapt(T,m.a),adapt(T,m.b),adapt(T,m.d))
+adapt(T, m::ResDense) = ResDense(adapt(T,m.a), adapt(T,m.b), adapt(T,m.d))

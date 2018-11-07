@@ -14,6 +14,7 @@ include("lbfgs.jl")
 include("search/evaluation.jl")
 include("triangularloss.jl")
 include("learn.jl")
+include("productlayer.jl")
 
 freeze(m) = Flux.mapleaves(Flux.Tracker.data,m)
 
@@ -42,6 +43,6 @@ end
 restoremodel!(m,p) = foreach(a -> copy!(Flux.data(a[1]),a[2]),zip(Flux.params(m),p))
 
 
-export ResDense, restoremodel, layerbuilder
+export ResDense, restoremodel, layerbuilder, ProductLayer, to32
 export logit_cross_entropy, weighted_logit_cross_entropy, classweightvector
 end # module

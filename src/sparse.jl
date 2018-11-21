@@ -126,7 +126,7 @@ function Base.reduce(::typeof(hcat), A::AbstractVector{T}) where {T<: SparseMatr
     Vs[i] =  V
     coloffset += a.n
   end
-  sparse(reduce(vcat, Is), reduce(vcat, Js), reduce(vcat, Vs))
+  sparse(reduce(vcat, Is), reduce(vcat, Js), reduce(vcat, Vs),  A[1].m, coloffset)
 end
 
 

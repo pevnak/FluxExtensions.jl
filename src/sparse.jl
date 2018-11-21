@@ -97,6 +97,39 @@ Flux.Tracker.@grad function mul(a::AbstractMatrix, b::SparseMatrixCSC, mask)
   return mul(Flux.data(a), b, mask) , Δ -> (multrans(Δ, b),nothing, nothing)
 end
 
+function SparseArrays.findnz(S::SparseMatrixCSC{Tv,Ti}, coloffset) where {Tv,Ti}
+    numnz = nnz(S)
+    I = Vector{Ti}(undef, numnz)
+    J = Vector{Ti}(undef, numnz)
+    V = Vector{Tv}(undef, numnz)
+
+    count = 1
+    @inbounds for col = 1 : S.n, k = S.colptr[col] : (S.colptr[col+1]-1)
+        I[count] = S.rowval[k]
+        J[count] = col + coloffset
+        V[count] = S.nzval[k]
+        count += 1
+    end
+
+    return (I, J, V)
+end
+
+function Base.reduce(::typeof(hcat), A::AbstractVector{T}) where {T<: SparseMatrixCSC{Tv, Ti} where {Tv, Ti}}
+  length(A) <= 1 && return(A)
+  Tv, Ti = eltype(A[1].nzval), eltype(A[1].colptr)
+  coloffset = 0
+  Is, Js, Vs = Vector{Vector{Ti}}(undef, length(A)), Vector{Vector{Ti}}(undef, length(A)), Vector{Vector{Tv}}(undef, length(A))
+  for (i, a) in enumerate(A)
+    (I, J, V) = findnz(a, coloffset)
+    Is[i] =  I
+    Js[i] =  J
+    Vs[i] =  V
+    coloffset += a.n
+  end
+  sparse(reduce(vcat, Is), reduce(vcat, Js), reduce(vcat, Vs))
+end
+
+
 # using CuArrays
 # using CUSPARSE
 # CuArrays.allowscalar(false)

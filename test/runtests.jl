@@ -4,7 +4,6 @@ using Flux.Tracker, NNlib
 using Flux.Tracker: TrackedReal, gradcheck
 using FluxExtensions
 
-
 include("layers/resdense.jl")
 include("pdfs.jl")
 include("triangularloss.jl")

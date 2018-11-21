@@ -1,6 +1,5 @@
 module FluxExtensions
 using Adapt, Flux, Statistics
-import Adapt: adapt
 using LinearAlgebra
 
 include("layers/resdense.jl")

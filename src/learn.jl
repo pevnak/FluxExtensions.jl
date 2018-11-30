@@ -72,6 +72,7 @@ function learn(model, loss, opt, data_provider, max_steps; cb = default_cb, brea
 	  if mod(step,breaks) == 0
 	  	cb(step, load_time, calculation_time, training_loss / breaks)
 	  	serializestate("state.ser", model, loss, data)
+	  	GC.gc();GC.gc();GC.gc();GC.gc();GC.gc()
 	    training_loss = 0.0
 	  end
 	end
@@ -90,17 +91,6 @@ function ∇loss!(loss, model, data, filename = nothing)
   end
   Flux.data(fVal)
 end
-
-
-function copyvalues!(dst, src)
-	foreach(i -> copyto!(Flux.data(dst[i]),Flux.data(src[i])), 1:length(src))
-end
-
-function addgrads!(dst, src)
-	foreach(i -> (d = Flux.Tracker.grad(dst[i]); d .+= Flux.Tracker.grad(src[i])), 1:length(src))
-end
-
-scalegrads!(dst, α) = foreach(p -> (d = Flux.Tracker.grad(p); d .*= α), dst)
 
 ∇loss!(loss, models::NTuple{N, A}, datas::NTuple{N, B}, filename)  where {N, A, B} = ∇loss!(loss, models, datas,  map(params, models),  filename)
 function ∇loss!(loss, models::NTuple{N, A}, datas::NTuple{N, B}, mparams, filename) where {N, A, B}

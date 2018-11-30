@@ -8,8 +8,6 @@ function vector2values!(dst, θ)
     end
 end
 
-zerograds!(dst) = foreach(m -> fill!(m.grad,0),dst)
-
 function grad2vector!(w, src)
     offset = 1
     for m in src 

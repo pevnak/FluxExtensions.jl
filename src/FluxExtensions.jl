@@ -17,6 +17,18 @@ include("productlayer.jl")
 
 freeze(m) = Flux.mapleaves(Flux.Tracker.data,m)
 
+function copyvalues!(dst, src)
+	foreach(i -> copyto!(Flux.data(dst[i]),Flux.data(src[i])), 1:length(src))
+end
+
+function addgrads!(dst, src)
+	foreach(i -> (d = Flux.Tracker.grad(dst[i]); d .+= Flux.Tracker.grad(src[i])), 1:length(src))
+end
+
+scalegrads!(dst, α) = foreach(p -> (d = Flux.Tracker.grad(p); d .*= α), dst)
+
+zerograds!(dst) = foreach(m -> fill!(m.grad,0),dst)
+
 function regcov(x,dim::Int=2)
 	xx = x .- mean(x,dim)
 	xx = xx * xx' / size(x,dim);

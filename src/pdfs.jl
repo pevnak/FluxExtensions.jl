@@ -99,15 +99,9 @@ kldiv(μ,σ2) = - mean(sum((@.log(σ2) - μ^2 - σ2), dims=1))
 
 		log-likelihood of x to the Normal with centre at mu
 """
-<<<<<<< HEAD
-log_normal(x) = - sum((@. x^2), dims = 1)/2 .- size(x,1)*log(2π)/2
-log_normal(x,μ) = log_normal(x .- μ)
-log_normal(x,μ, σ2::T) where {T<:Number} = - sum((@. ((x - μ)^2)/σ2), dims = 1)/2 .- size(x,1)*log(σ2*2π)/2
-=======
 log_normal(x) = - sum((@. x^2), dims=1)/2 .- size(x,1)*log(2π)/2
 log_normal(x,μ) = log_normal(x .- μ)
 log_normal(x,μ, σ2::T) where {T<:Number} = - sum((@. ((x - μ)^2)/σ2), dims=1)/2 .- size(x,1)*log(σ2*2π)/2
->>>>>>> 1964573b3c64280f204785d3910e0ba964491041
 
 log_bernoulli(x::AbstractMatrix,θ::AbstractVector) = log.(θ)' * x
 log_bernoulli(x::AbstractMatrix,θ::AbstractMatrix) = sum(x .* log.(θ),dims=1)

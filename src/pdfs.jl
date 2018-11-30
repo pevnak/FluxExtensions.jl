@@ -5,7 +5,7 @@ using Flux.Tracker: TrackedArray, TrackedReal
 	pairwise distances between `x` and `y` using Euclidean Distance.
 	
 """
-pairwisel2(x,y) = -2 .* x' * y .+ sum(x.^2, 1)' .+ sum(y.^2, 1)
+pairwisel2(x,y) = -2 .* x' * y .+ sum(x.^2, dims=1)' .+ sum(y.^2, dims=1)
 
 
 """
@@ -84,7 +84,7 @@ crosspdf_normal(x, c, σ) = exp.(crosslog_normal(x, c, σ))
 crosslog_normal(x, c, σ ::T) where {T<:Real} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π*σ^2)/2
 # crosslog_normal(x, c, σ ::T) where {T<:Union{Transpose, TrackedArray{T, N, A} where {T, N, A<: Transpose}}} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- size(x,1)*log.(σ')
 crosslog_normal(x, c, σ ::T) where {T<:AbstractVector} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- sum(log.(σ))
-crosslog_normal(x, c, σ ::T) where {T<:AbstractMatrix} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- (1+ size(x,1) - size(σ,1)).*sum(log.(σ), 1)'
+crosslog_normal(x, c, σ ::T) where {T<:AbstractMatrix} = - 0.5 .* scaled_pairwisel2(c, x, σ) .- size(x,1)*log(2π)/2 .- (1+ size(x,1) - size(σ,1)).*sum(log.(σ), dims=1)'
 
 """
 		kldiv(μ,σ2)
@@ -92,16 +92,22 @@ crosslog_normal(x, c, σ ::T) where {T<:AbstractMatrix} = - 0.5 .* scaled_pairwi
 		kl-divergence of a Gaussian min mean `μ` and diagonal variance `σ^2`
 		to N(0,I)
 """
-kldiv(μ,σ2) = - mean(sum((@.log(σ2) - μ^2 - σ2), 1))
+kldiv(μ,σ2) = - mean(sum((@.log(σ2) - μ^2 - σ2), dims=1))
 
 """
 		log_normal(x,μ,σ2 = I)
 
 		log-likelihood of x to the Normal with centre at mu
 """
+<<<<<<< HEAD
 log_normal(x) = - sum((@. x^2), dims = 1)/2 .- size(x,1)*log(2π)/2
 log_normal(x,μ) = log_normal(x .- μ)
 log_normal(x,μ, σ2::T) where {T<:Number} = - sum((@. ((x - μ)^2)/σ2), dims = 1)/2 .- size(x,1)*log(σ2*2π)/2
+=======
+log_normal(x) = - sum((@. x^2), dims=1)/2 .- size(x,1)*log(2π)/2
+log_normal(x,μ) = log_normal(x .- μ)
+log_normal(x,μ, σ2::T) where {T<:Number} = - sum((@. ((x - μ)^2)/σ2), dims=1)/2 .- size(x,1)*log(σ2*2π)/2
+>>>>>>> 1964573b3c64280f204785d3910e0ba964491041
 
 log_bernoulli(x::AbstractMatrix,θ::AbstractVector) = log.(θ)' * x
-log_bernoulli(x::AbstractMatrix,θ::AbstractMatrix) = sum(x .* log.(θ),dims = 1)
+log_bernoulli(x::AbstractMatrix,θ::AbstractMatrix) = sum(x .* log.(θ),dims=1)

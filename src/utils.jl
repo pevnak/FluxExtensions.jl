@@ -1,5 +1,14 @@
-adapt(T, x::Array) = T.(x)
-adapt(T, m::Flux.Dense) = Flux.Dense(adapt(T,m.W),adapt(T,m.b),m.σ)
+Adapt.adapt(T, x::Array) = T.(x)
+Adapt.adapt(T, x::Real) = T(x)
+
+"""
+  to32(m)
+
+  convert all numbers, arrays, and parameters in model to Float32 
+
+"""
+to32(m) = mapleaves(x -> Adapt.adapt(Float32, x), m)
+
 
 logit_cross_entropy(logit, y) = -sum(y.*(logit.-logsumexp(logit, 1))) / size(logit,2)
 
@@ -28,7 +37,7 @@ function classweightvector(y::AbstractArray{T},classweights::Vector{S}) where {T
     w[j] = classweights[y[j]]/classsizes[y[j]]
   end
   if sum(isnan.(w))>0 || sum(isinf.(w))>0
-    save("error.jld","y",y,"classweights",classweights)
+    save("error.jld2","y",y,"classweights",classweights)
     error("nans or infs in classweights")
   end
   w

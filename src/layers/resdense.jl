@@ -18,5 +18,5 @@ function Base.show(io::IO, l::ResDense)
   print(io, ")")
 end
 
-Flux.treelike(ResDense)
-adapt(T, m::ResDense) = ResDense(adapt(T,m.a),adapt(T,m.b),adapt(T,m.d))
+Flux.@treelike(ResDense)
+adapt(T, m::ResDense) = ResDense(adapt(T,m.a), adapt(T,m.b), adapt(T,m.d))

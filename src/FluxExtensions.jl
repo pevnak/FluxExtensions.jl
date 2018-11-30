@@ -1,13 +1,10 @@
 module FluxExtensions
-using Adapt
-using Flux
-import Adapt: adapt
-
+using Adapt, Flux, Statistics
+using LinearAlgebra
 
 include("layers/resdense.jl")
 include("layers/layerbuilder.jl")
 include("utils.jl")
-# include("plot.jl")
 include("sparse.jl")
 include("pdfs.jl")
 include("sumnondiagonal.jl")
@@ -15,8 +12,22 @@ include("scatter.jl")
 include("lbfgs.jl")
 include("search/evaluation.jl")
 include("triangularloss.jl")
+include("learn.jl")
+include("productlayer.jl")
 
 freeze(m) = Flux.mapleaves(Flux.Tracker.data,m)
+
+function copyvalues!(dst, src)
+	foreach(i -> copyto!(Flux.data(dst[i]),Flux.data(src[i])), 1:length(src))
+end
+
+function addgrads!(dst, src)
+	foreach(i -> (d = Flux.Tracker.grad(dst[i]); d .+= Flux.Tracker.grad(src[i])), 1:length(src))
+end
+
+scalegrads!(dst, α) = foreach(p -> (d = Flux.Tracker.grad(p); d .*= α), dst)
+
+zerograds!(dst) = foreach(m -> fill!(m.grad,0),dst)
 
 function regcov(x,dim::Int=2)
 	xx = x .- mean(x,dim)
@@ -43,6 +54,6 @@ end
 restoremodel!(m,p) = foreach(a -> copy!(Flux.data(a[1]),a[2]),zip(Flux.params(m),p))
 
 
-export ResDense, restoremodel, layerbuilder
+export ResDense, restoremodel, layerbuilder, ProductLayer, to32
 export logit_cross_entropy, weighted_logit_cross_entropy, classweightvector
 end # module

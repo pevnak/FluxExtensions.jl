@@ -22,7 +22,7 @@ pairwisel2(x,y) = -2 .* x' * y .+ sum(x.^2, 1)' .+ sum(y.^2, 1)
 scaled_pairwisel2(x, y, σ::T) where {T<: Union{Real,TrackedReal}} = pairwisel2(x, y) ./ σ^2
 scaled_pairwisel2(x, y, σ::T) where {T<:Union{AbstractVector, TrackedArray{T, N, A} where {T, N, A<: AbstractVector}}} = pairwisel2(x ./σ, y./σ)
 # scaled_pairwisel2(x, y, σ::T) where {T<:Union{Transpose, TrackedArray{T, N, A} where {T, N, A<: Transpose}}} = pairwisel2(x, y) ./ (σ'.^2)
-scaled_pairwisel2(x::Matrix, y::Matrix, σ::Matrix) = (size(σ,1) > 1) ? _scaled_pairwisel2(x, y, σ) : pairwisel2(x, y) ./ (σ'.^2)
+scaled_pairwisel2(x::AbstractMatrix, y::AbstractMatrix, σ::AbstractMatrix) = (size(σ,1) > 1) ? _scaled_pairwisel2(x, y, σ) : pairwisel2(x, y) ./ (σ'.^2)
 
 function _scaled_pairwisel2(x, y, σ)
 	# @assert ((size(y, 1) == size(σ, 1) ) && (size(x, dims = 2) == size(σ, dims = 2)) && (size(x, 1) == size(y, 1)))
@@ -56,7 +56,10 @@ function _scaled_pairwisel2_m_back(Δ, x, y, σ)
 	(∇x, ∇y, ∇σ)
 end
 
-scaled_pairwisel2(x, y, σ::S) where {S<:Union{Matrix, TrackedArray{T, N, A} where {T, N, A<: Matrix}}} = (size(σ,1) == 1 ) ? pairwisel2(x, y) ./ (σ'.^2) : Flux.Tracker.track(scaled_pairwisel2, x, y, σ)
+for x in [AbstractMatrix,TrackedMatrix], y in  [AbstractMatrix,TrackedMatrix], z in [AbstractMatrix,TrackedMatrix]
+ x == y == z == AbstractMatrix && continue
+ eval(:(scaled_pairwisel2(x::TX, y::TY, σ::TZ) where {TX<:$x, TY<:$y, TZ<:$z} = (size(σ,1) == 1 ) ? pairwisel2(x, y) ./ (σ'.^2) : Flux.Tracker.track(scaled_pairwisel2, x, y, σ)))
+end
 Flux.Tracker.@grad function scaled_pairwisel2(x, y, σ)
   return(_scaled_pairwisel2(Flux.data(x), Flux.data(y), Flux.data(σ)), Δ -> _scaled_pairwisel2_m_back(Flux.data(Δ), Flux.data(x), Flux.data(y), Flux.data(σ)))
 end
@@ -96,9 +99,9 @@ kldiv(μ,σ2) = - mean(sum((@.log(σ2) - μ^2 - σ2), 1))
 
 		log-likelihood of x to the Normal with centre at mu
 """
-log_normal(x) = - sum((@. x^2), 1)/2 - size(x,1)*log(2π)/2
-log_normal(x,μ) = log_normal(x - μ)
-log_normal(x,μ, σ2::T) where {T<:Number} = - sum((@. ((x - μ)^2)/σ2), 1)/2 - size(x,1)*log(σ2*2π)/2
+log_normal(x) = - sum((@. x^2), dims = 1)/2 .- size(x,1)*log(2π)/2
+log_normal(x,μ) = log_normal(x .- μ)
+log_normal(x,μ, σ2::T) where {T<:Number} = - sum((@. ((x - μ)^2)/σ2), dims = 1)/2 .- size(x,1)*log(σ2*2π)/2
 
 log_bernoulli(x::AbstractMatrix,θ::AbstractVector) = log.(θ)' * x
-log_bernoulli(x::AbstractMatrix,θ::AbstractMatrix) = sum(x .* log.(θ),1)
+log_bernoulli(x::AbstractMatrix,θ::AbstractMatrix) = sum(x .* log.(θ),dims = 1)

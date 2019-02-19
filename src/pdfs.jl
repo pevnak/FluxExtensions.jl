@@ -99,7 +99,7 @@ kldiv(μ,σ2) = - mean(sum((@.log(σ2) - μ^2 - σ2), dims=1))
 
 		log-likelihood of x to the Normal with centre at mu
 """
-log_normal(x) = - sum((@. x^2), dims=1)/2 .- size(x,1)*log(2π)/2
+log_normal(x) = - sum(x.^2, dims=1) / 2 .- size(x,1)*log(2π) / 2
 log_normal(x,μ) = log_normal(x .- μ)
 log_normal(x,μ, σ2::T) where {T<:Number} = - sum((@. ((x - μ)^2)/σ2), dims=1)/2 .- size(x,1)*log(σ2*2π)/2
 

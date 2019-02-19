@@ -78,6 +78,26 @@ function learn(model, loss, opt, data_provider, max_steps; cb = default_cb, brea
 	end
 end
 
+function learn(model, loss, opt::Tuple, data_provider, max_steps; cb = default_cb, breaks = 100, state_filename = nothing)
+	step, load_time, calculation_time, training_loss =0, 0.0, 0.0, 0.0
+	state = nothing
+	while step < max_steps
+	  # load_time += @elapsed  data = state == nothing ?  Base.iterate(data_provider) : Base.iterate(data_provider, state)
+	  load_time += @elapsed  data = data_provider()
+	  data == nothing && break
+	  # data, state = data
+	  calculation_time += @elapsed training_loss +=  ∇loss!(loss, model, data, state_filename)
+	  calculation_time += @elapsed Flux.Optimise._update_params!(opt...)
+	  step+=1
+	  if mod(step,breaks) == 0
+	  	cb(step, load_time, calculation_time, training_loss / breaks)
+	  	serializestate("state.ser", model, loss, data)
+	  	GC.gc();GC.gc();GC.gc();GC.gc();GC.gc()
+	    training_loss = 0.0
+	  end
+	end
+end
+
 function ∇loss!(loss, model, data, filename = nothing)
 	fVal = loss(model, data)
 	if filename != nothing && (isnan(Flux.data(fVal)) || isinf(Flux.data(fVal))) 
@@ -97,7 +117,7 @@ function ∇loss!(loss, models::NTuple{N, A}, datas::NTuple{N, B}, mparams, file
 	@assert length(models) == length(datas)
 	n = length(models)
 	fVals = fill(0.0, n)
-	Threads.@threads for i in 1:n
+	for i in 1:n
 		i != 1 && copyvalues!(mparams[i], mparams[1])
 		zerograds!(mparams[i])
 		fVals[i] = ∇loss!(loss, models[i], datas[i], filename)

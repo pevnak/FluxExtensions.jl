@@ -1,5 +1,5 @@
-Adapt.adapt(T, x::Array) = T.(x)
-Adapt.adapt(T, x::Real) = T(x)
+# Adapt.adapt(T, x::Array) = T.(x)
+# Adapt.adapt(T, x::Real) = T(x)
 
 """
   to32(m)

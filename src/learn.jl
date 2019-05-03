@@ -1,4 +1,4 @@
-using Printf, Serialization
+using Printf, Serialization, BSON
 function default_cb(step, load_time, calculation_time, training_loss)
 	println(@sprintf("%d: training loss = %.4g load time= %.0fs (%.2fs per step)  compute time %.0fs (%.2fs per step) ",step , training_loss, load_time, load_time / step, calculation_time, calculation_time / step))
 end
@@ -22,7 +22,7 @@ correctgrad(model) = !wronggrad(model)
 """		
 function serializestate(filename, model, loss, data)
 	open(filename, "w") do fid 
-		serialize(fid, (model, loss, data))
+		serialize(fid, (cpu(model), loss, cpu(data)))
 	end
 end
 
@@ -91,7 +91,7 @@ function learn(model, loss, opt::Tuple, data_provider, max_steps; cb = default_c
 	  step+=1
 	  if mod(step,breaks) == 0
 	  	cb(step, load_time, calculation_time, training_loss / breaks)
-	  	serializestate("state.ser", model, loss, data)
+	  	BSON.@save state_filename model loss data
 	  	GC.gc();GC.gc();GC.gc();GC.gc();GC.gc()
 	    training_loss = 0.0
 	  end
@@ -117,7 +117,7 @@ function ∇loss!(loss, models::NTuple{N, A}, datas::NTuple{N, B}, mparams, file
 	@assert length(models) == length(datas)
 	n = length(models)
 	fVals = fill(0.0, n)
-	for i in 1:n
+	Threads.@threads for i in 1:n
 		i != 1 && copyvalues!(mparams[i], mparams[1])
 		zerograds!(mparams[i])
 		fVals[i] = ∇loss!(loss, models[i], datas[i], filename)
